@@ -113,9 +113,10 @@
         <div class="form-row">
         <label for="node-input-operation"><i class="icon-wrench"></i> Operation</label>
         <select type="text" id="node-input-operation" style="display: inline-block; vertical-align: top;">
-            <option value=store>save</option>
-            <option value=insert>insert</option>
-            <option value=delete>remove</option>
+            <option value="store">save</option>
+            <option value="insert">insert</option>
+            <option value="update">update</option>
+            <option value="delete">remove</option>
         </select>
     </div>
     <div class="form-row node-input-payonly">
@@ -123,27 +124,37 @@
         <input type="checkbox" id="node-input-payonly" placeholder="Only" style="display: inline-block; width: auto; vertical-align: top;">
         <label for="node-input-payonly" style="width: 70%;">Only store msg.payload object ?</label>
     </div>
+    <div class="form-row node-input-upsert">
+        <label>&nbsp;</label>
+        <input type="checkbox" id="node-input-upsert" placeholder="Only" style="display: inline-block; width: auto; vertical-align: top;">
+        <label for="node-input-upsert" style="width: 70%;">Create a new document if no match found</label>
+    </div>
+    <div class="form-row node-input-multi">
+        <label>&nbsp;</label>
+        <input type="checkbox" id="node-input-multi" placeholder="Only" style="display: inline-block; width: auto; vertical-align: top;;">
+        <label for="node-input-multi" style="width: 70%;">Update all matching documents</label>
+    </div>
     <div class="form-row">
         <label for="node-input-name"><i class="icon-tag"></i> Name</label>
         <input type="text" id="node-input-name" placeholder="Name">
     </div>
-    <script>
-        $("#node-input-operation").change(function() {
-            var id = $("#node-input-operation option:selected").val();
-            if (id == "delete") $(".node-input-payonly").hide();
-            else $(".node-input-payonly").show();
-        });
-    </script>
+    <div class="form-tips" id="node-warning" style="display: none"><b> Tip:</b> If no collection is set, ensure <b>msg.collection</b> will contain the collection name
+    </div>
 </script>
 
 <script type="text/x-red" data-help-name="mongodb out">
-    <p>A simple MongoDB output node. Stores the <b>msg</b> object in a chosen collection.</p>
+    <p>A simple MongoDB output node. Can save, insert, update and remove objects from a chosen collection.</p>
+    <p>Save will update an existing object or insert a new object if one does not already exist.</p>
+    <p>Insert will insert a new object.</p>
+    <p>Save and insert either store <b>msg</b> or <b>msg.payload</b>.</p>
+    <p>Update will modify an existing object or objects. The query to select objects to update uses <b>msg.query</b> and the update to the element uses <b>msg.payload</b>.</p>
+    <p>Update can add a object if it does not exist or update multiple objects.</p>
+    <p>Remove will remove objects that match the query passed in on <b>msg.payload</b>. A blank query will delete <i>all of the objects</i> in the collection.</p>
+    <p>You can either set the collection method in the node config or on <b>msg.collection</b>. Setting it in the node will override <b>msg.collection</b>.</p>
     <p>By default MongoDB creates an <i>_id</i> property as the primary key - so repeated injections of the same <b>msg</b> will result in many database entries.</p>
-    <p>If this is NOT the desired behaviour - ie you want repeated entries to overwrite, then you must set the <b>msg._id</b> property to be a constant by the use of a previous function node.</p>
+    <p>If this is NOT the desired behaviour - ie. you want repeated entries to overwrite, then you must set the <b>msg._id</b> property to be a constant by the use of a previous function node.</p>
     <p>This could be a unique constant or you could create one based on some other msg property.</p>
     <p>Currently we do not limit or cap the collection size at all... this may well change.</p>
-    <p>You can also choose to <b>remove</b> items. To do so the <b>msg.payload</b> <i>MUST</i> contain an object that will select the items(s) to remove.
-    A blank object will delete <i>all of the objects</i> in the collection. You have been warned...</p>
 </script>
 
 <script type="text/x-red" data-template-name="mongodb in">
@@ -174,6 +185,8 @@
         <label for="node-input-name"><i class="icon-tag"></i> Name</label>
         <input type="text" id="node-input-name" placeholder="Name">
     </div>
+    <div class="form-tips" id="node-warning" style="display: none"><b> Tip:</b> If no collection is set, ensure <b>msg.collection</b> will contain the collection name
+    </div>
 </script>
 
 <script type="text/x-red" data-help-name="mongodb in">
@@ -191,26 +204,50 @@
         function oneditprepare() {
             var select = $('#node-input-service')
             var node = this;
-            $.getJSON('mongodb/vcap/',function(data) {
+            $.getJSON('mongodb/vcap/', function(data) {
                 var last = select.children().last();
                 var opts = [];
-                for (var i =0;i<data.length;i++) {
-                    opts.push('<option value="'+data[i].name+'"'+(node.service==data[i].name?" selected":"")+'>'+data[i].name+'</option>');
+                for (var i =0; i<data.length; i++) {
+                    opts.push('<option value="' + data[i].name + '"' + (node.service === data[i].name ? " selected" : "") + '>' + data[i].name + '</option>');
                 }
-                if (opts.length == 0) {
+                if (opts.length === 0) {
                     node.service = "_ext_";
-                    select.find("option").filter(function() {return $(this).val() == node.service;}).attr('selected',true);
+                    select.find("option").filter(function() {return $(this).val() === node.service;
+                    }).attr('selected', true);
                 } else {
                     last.before(opts.join(""));
                 }
                 select.change();
             });
+
             select.change(function() {
                 var service = select.val();
-                if (service == "_ext_") {
+                if (service === "_ext_") {
                     $("#node-input-external-details").show();
                 } else {
                     $("#node-input-external-details").hide();
+                }
+            });
+
+            $("#node-input-operation").change(function () {
+                var id = $("#node-input-operation option:selected").val();
+
+                if (id === "update") {
+                    $(".node-input-payonly").hide();
+                    $(".node-input-upsert, .node-input-multi").show();
+                } else if (id === "delete") {
+                    $(".node-input-payonly, .node-input-upsert, .node-input-multi").hide();
+                } else {
+                    $(".node-input-payonly").show();
+                    $(".node-input-upsert, .node-input-multi").hide();
+                }
+            });
+
+            $("#node-input-collection").change(function () {
+                if($("#node-input-collection").val() === "") {
+                    $("#node-warning").show();
+                } else {
+                    $("#node-warning").hide();
                 }
             });
         }
@@ -220,34 +257,36 @@
             if (this.name) {
                 return this.name;
             }
-            if (this.service == "_ext_") {
-                return (mongoNode?mongoNode.label()+" "+this.collection:"mongodb");
+            if (this.service === "_ext_") {
+                return (mongoNode?mongoNode.label() + " " + this.collection: "mongodb");
             }
-            return this.service||"mongodb";
+            return this.service || "mongodb";
         }
 
         function validateServer(v) {
-            return this.service != "_ext_" || v!="_ADD_";
+            return this.service !== "_ext_" || v !== "_ADD_";
         }
 
-        RED.nodes.registerType('mongodb out',{
+        RED.nodes.registerType('mongodb out', {
             category: 'storage-output',
             color:"rgb(218, 196, 180)",
             defaults: {
                 service: {value:"", required: true},
-                mongodb: { type:"mongodb",validate:validateServer},
-                name: {value:""},
-                collection: {value:"",required:true},
-                payonly: {value:false},
-                operation: {value:"store"}
+                mongodb: { type:  "mongodb", validate: validateServer},
+                name: {value: ""},
+                collection: {value: ""},
+                payonly: {value: false},
+                upsert: {value: false},
+                multi: {value: false},
+                operation: {value: "store"}
             },
-            inputs:1,
-            outputs:0,
+            inputs: 1,
+            outputs: 0,
             icon: "mongodb.png",
             align: "right",
             label: label,
             labelStyle: function() {
-                return this.name?"node_label_italic":"";
+                return this.name ? "node_label_italic" : "";
             },
             oneditprepare: oneditprepare
         });
@@ -255,20 +294,20 @@
 
         RED.nodes.registerType('mongodb in',{
             category: 'storage-input',
-            color:"rgb(218, 196, 180)",
+            color: "rgb(218, 196, 180)",
             defaults: {
-                service: {value:"", required: true},
-                mongodb: { type:"mongodb",validate:validateServer},
-                name: {value:""},
-                collection: {value:"",required:true},
-                operation: {value:"find"}
+                service: {value: "", required: true},
+                mongodb: {type: "mongodb", validate: validateServer},
+                name: {value: ""},
+                collection: {value: ""},
+                operation: {value: "find"}
             },
-            inputs:1,
-            outputs:1,
+            inputs: 1,
+            outputs: 1,
             icon: "mongodb.png",
             label: label,
             labelStyle: function() {
-                return this.name?"node_label_italic":"";
+                return this.name ? "node_label_italic" : "";
             },
             oneditprepare: oneditprepare
         });

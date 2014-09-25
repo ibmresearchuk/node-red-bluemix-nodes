@@ -159,47 +159,97 @@ function MongoOutNode(n) {
     this.collection = n.collection;
     this.mongodb = n.mongodb;
     this.payonly = n.payonly || false;
+    this.upsert = n.upsert || false;
+    this.multi = n.multi || false;
     this.operation = n.operation;
 
-    if (n.service == "_ext_") {
+    if (n.service === "_ext_") {
         var mongoConfig = RED.nodes.getNode(this.mongodb);
         if (mongoConfig) {
             this.url = mongoConfig.url;
         }
-    } else if (n.service != "") {
+    } else if (n.service !== "") {
         var mongoConfig = cfEnv.getService(n.service);
         if (mongoConfig) {
-            this.url = mongoConfig.credentials.url||mongoConfig.credentials.uri||mongoConfig.credentials.json_url;
+            this.url = mongoConfig.credentials.url || mongoConfig.credentials.uri || mongoConfig.credentials.json_url;
         }
     }
 
     if (this.url) {
         var node = this;
         ConnectionPool.get(this.url).then(function(db) {
-            db.collection(node.collection, function(err,coll) {
-                node.on("input",function(msg) {
-                    if (node.operation == "store") {
-                        delete msg._topic;
-                        if (node.payonly) {
-                            if (typeof msg.payload !== "object") { msg.payload = {"payload":msg.payload}; }
-                            coll.save(msg.payload,function(err,item){ if (err){node.error(err);} });
-                        } else {
-                            coll.save(msg,function(err,item){if (err){node.error(err);}});
+            var coll;
+            if (node.collection) {
+                coll = db.collection(node.collection);
+            }
+            node.on("input", function(msg) {
+                if (!coll) {
+                    if (msg.collection) {
+                        coll = db.collection(msg.collection);
+                    } else {
+                        node.error("No collection defined");
+                        return;
+                    }
+                }
+                delete msg._topic;
+                delete msg.collection;
+                if (node.operation === "store") {
+                    if (node.payonly) {
+                        if (typeof msg.payload !== "object") {
+                            msg.payload = {"payload":msg.payload};
                         }
+                        coll.save(msg.payload, function(err,item){
+                            if (err) {
+                                node.error(err);
+                            }
+                        });
+                    } else {
+                        coll.save(msg, function(err, item) {
+                            if (err) {
+                                node.error(err);
+                            }
+                        });
                     }
-                    else if (node.operation == "insert") {
-                        delete msg._topic;
-                        if (node.payonly) {
-                            if (typeof msg.payload !== "object") { msg.payload = {"payload":msg.payload}; }
-                            coll.insert(msg.payload,function(err,item){ if (err){node.error(err);} });
-                        } else {
-                            coll.insert(msg,function(err,item){if (err){node.error(err);}});
+                } else if (node.operation === "insert") {
+                    if (node.payonly) {
+                        if (typeof msg.payload !== "object") {
+                            msg.payload = {"payload": msg.payload};
                         }
+                        coll.insert(msg.payload, function(err,item) {
+                            if (err) {
+                                node.error(err);
+                            }
+                        });
+                    } else {
+                        coll.insert(msg, function(err, item) {
+                            if (err) {
+                                node.error(err);
+                            }
+                        });
                     }
-                    if (node.operation == "delete") {
-                        coll.remove(msg.payload, {w:1}, function(err, items){ if (err) node.error(err); });
+                } else if (node.operation === "update") {
+                    if (typeof msg.payload !== "object") {
+                        msg.payload = {"payload": msg.payload};
                     }
-                });
+                    var query = msg.query || {};
+                    var payload = msg.payload || {};
+                    var options = {
+                        upsert: node.upsert,
+                        multi: node.multi
+                    };
+
+                    coll.update(query, payload, options, function(err, item) {
+                        if (err) {
+                            node.error(err);
+                        }
+                    });
+                } else if (node.operation === "delete") {
+                    coll.remove(msg.payload, function(err, items) {
+                        if (err) {
+                            node.error(err);
+                        }
+                    });
+                }
             });
         }).otherwise(function(err) {
             node.error(err);
@@ -223,59 +273,67 @@ function MongoInNode(n) {
     this.mongodb = n.mongodb;
     this.operation = n.operation || "find";
 
-    if (n.service == "_ext_") {
+    if (n.service === "_ext_") {
         var mongoConfig = RED.nodes.getNode(this.mongodb);
         if (mongoConfig) {
             this.url = mongoConfig.url;
         }
-    } else if (n.service != "") {
+    } else if (n.service !== "") {
         var mongoConfig = cfEnv.getService(n.service);
         if (mongoConfig) {
-            this.url = mongoConfig.credentials.url||mongoConfig.credentials.uri||mongoConfig.credentials.json_url;
+            this.url = mongoConfig.credentials.url || mongoConfig.credentials.uri || mongoConfig.credentials.json_url;
         }
     }
 
     if (this.url) {
         var node = this;
         ConnectionPool.get(this.url).then(function(db) {
-            db.collection(node.collection,function(err,coll) {
-                node.on("input",function(msg) {
-                    if (node.operation === "find") {
-                        msg.projection = msg.projection || {};
-                        coll.find(msg.payload,msg.projection).sort(msg.sort).limit(msg.limit).toArray(function(err, items) {
-                            if (err) {
-                                node.error(err);
-                            } else {
-                                msg.payload = items;
-                                delete msg.projection;
-                                delete msg.sort;
-                                delete msg.limit;
-                                node.send(msg);
-                            }
-                        });
+            var coll;
+            if (node.collection) {
+                coll = db.collection(node.collection);
+            }
+            node.on("input", function(msg) {
+                if (!coll) {
+                    if (msg.collection) {
+                        coll = db.collection(msg.collection);
+                    } else {
+                        node.error("No collection defined");
+                        return;
                     }
-                    else if (node.operation === "count") {
-                        coll.count(msg.payload, function(err, count) {
-                            if (err) {
-                                node.error(err);
-                            } else {
-                                msg.payload = count;
-                                node.send(msg);
-                            }
-                        });
-                    }
-                    else if (node.operation === "aggregate") {
-                        msg.payload = (msg.payload instanceof Array) ? msg.payload : [];
-                        coll.aggregate(msg.payload, function(err, result) {
-                            if (err) {
-                                node.error(err);
-                            } else {
-                                msg.payload = result;
-                                node.send(msg);
-                            }
-                        });
-                    }
-                });
+                }
+                if (node.operation === "find") {
+                    msg.projection = msg.projection || {};
+                    coll.find(msg.payload, msg.projection).sort(msg.sort).limit(msg.limit).toArray(function(err, items) {
+                        if (err) {
+                            node.error(err);
+                        } else {
+                            msg.payload = items;
+                            delete msg.projection;
+                            delete msg.sort;
+                            delete msg.limit;
+                            node.send(msg);
+                        }
+                    });
+                } else if (node.operation === "count") {
+                    coll.count(msg.payload, function(err, count) {
+                        if (err) {
+                            node.error(err);
+                        } else {
+                            msg.payload = count;
+                            node.send(msg);
+                        }
+                    });
+                } else if (node.operation === "aggregate") {
+                    msg.payload = (msg.payload instanceof Array) ? msg.payload : [];
+                    coll.aggregate(msg.payload, function(err, result) {
+                        if (err) {
+                            node.error(err);
+                        } else {
+                            msg.payload = result;
+                            node.send(msg);
+                        }
+                    });
+                }
             });
         }).otherwise(function(err) {
             node.error(err);
