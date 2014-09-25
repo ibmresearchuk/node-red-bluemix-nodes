@@ -1,0 +1,278 @@
+<!--
+  Copyright 2013 IBM Corp.
+
+  Licensed under the Apache License, Version 2.0 (the "License");
+  you may not use this file except in compliance with the License.
+  You may obtain a copy of the License at
+
+  http://www.apache.org/licenses/LICENSE-2.0
+
+  Unless required by applicable law or agreed to in writing, software
+  distributed under the License is distributed on an "AS IS" BASIS,
+  WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+  See the License for the specific language governing permissions and
+  limitations under the License.
+-->
+
+<script type="text/x-red" data-template-name="mongodb">
+    <div class="form-row">
+        <label for="node-config-input-hostname"><i class="icon-bookmark"></i> Host</label>
+        <input class="input-append-left" type="text" id="node-config-input-hostname" placeholder="localhost" style="width: 40%;" >
+        <label for="node-config-input-port" style="margin-left: 10px; width: 35px; "> Port</label>
+        <input type="text" id="node-config-input-port" placeholder="27017" style="width:45px">
+    </div>
+    <div class="form-row">
+        <label for="node-config-input-db"><i class="icon-briefcase"></i> Database</label>
+        <input type="text" id="node-config-input-db" placeholder="test">
+    </div>
+    <div class="form-row">
+        <label for="node-config-input-name"><i class="icon-tag"></i> Name</label>
+        <input type="text" id="node-config-input-name" placeholder="Name">
+    </div>
+    <div class="form-row">
+        <label for="node-config-input-user"><i class="icon-user"></i> Username</label>
+        <input type="text" id="node-config-input-user">
+    </div>
+    <div class="form-row">
+        <label for="node-config-input-pass"><i class="icon-lock"></i> Password</label>
+        <input type="password" id="node-config-input-pass">
+    </div>
+</script>
+
+<script type="text/javascript">
+
+    RED.nodes.registerType('mongodb',{
+        category: 'config',
+        color:"rgb(218, 196, 180)",
+        defaults: {
+            hostname: { value:"127.0.0.1"},
+            port: { value: 27017},
+            db: { value:""},
+            name: { value:"" },
+            //user -> credentials
+            //pass -> credentials
+        },
+        label: function() {
+            return this.name||this.hostname+":"+this.port+"/"+this.db;
+        },
+        oneditprepare: function() {
+            $.getJSON('mongodb/'+this.id,function(data) {
+                if (data.user) {
+                    $('#node-config-input-user').val(data.user);
+                }
+                if (data.hasPassword) {
+                    $('#node-config-input-pass').val('__PWRD__');
+                } else {
+                    $('#node-config-input-pass').val('');
+                }
+
+            });
+        },
+        oneditsave: function() {
+            var newUser = $('#node-config-input-user').val();
+            var newPass = $('#node-config-input-pass').val();
+            var credentials = {};
+            credentials.user = newUser;
+            if (newPass != '__PWRD__') {
+                credentials.password = newPass;
+            }
+            $.ajax({
+                url: 'mongodb/'+this.id,
+                type: 'POST',
+                data: credentials,
+                success:function(result){}
+            });
+        },
+        ondelete: function() {
+            $.ajax({
+                url: 'mongodb/'+this.id,
+                type: 'DELETE',
+                success: function(result) {}
+            });
+        }
+    });
+</script>
+
+
+<script type="text/x-red" data-template-name="mongodb out">
+    <div class="form-row">
+        <label for="node-input-service"><i class="icon-folder-close"></i> Service</label>
+        <select id="node-input-service">
+            <option value="" disabled></option>
+            <option value="_ext_">External service</option>
+        </select>
+    </div>
+    <div class="form-row hide" id="node-input-external-details">
+        <label for="node-input-mongodb"><i class="icon-bookmark"></i> Server</label>
+        <input type="text" id="node-input-mongodb">
+    </div>
+    <div class="form-row">
+        <label for="node-input-collection"><i class="icon-briefcase"></i> Collection</label>
+        <input type="text" id="node-input-collection" placeholder="collection">
+    </div>
+        <div class="form-row">
+        <label for="node-input-operation"><i class="icon-wrench"></i> Operation</label>
+        <select type="text" id="node-input-operation" style="display: inline-block; vertical-align: top;">
+            <option value=store>save</option>
+            <option value=insert>insert</option>
+            <option value=delete>remove</option>
+        </select>
+    </div>
+    <div class="form-row node-input-payonly">
+        <label>&nbsp;</label>
+        <input type="checkbox" id="node-input-payonly" placeholder="Only" style="display: inline-block; width: auto; vertical-align: top;">
+        <label for="node-input-payonly" style="width: 70%;">Only store msg.payload object ?</label>
+    </div>
+    <div class="form-row">
+        <label for="node-input-name"><i class="icon-tag"></i> Name</label>
+        <input type="text" id="node-input-name" placeholder="Name">
+    </div>
+    <script>
+        $("#node-input-operation").change(function() {
+            var id = $("#node-input-operation option:selected").val();
+            if (id == "delete") $(".node-input-payonly").hide();
+            else $(".node-input-payonly").show();
+        });
+    </script>
+</script>
+
+<script type="text/x-red" data-help-name="mongodb out">
+    <p>A simple MongoDB output node. Stores the <b>msg</b> object in a chosen collection.</p>
+    <p>By default MongoDB creates an <i>_id</i> property as the primary key - so repeated injections of the same <b>msg</b> will result in many database entries.</p>
+    <p>If this is NOT the desired behaviour - ie you want repeated entries to overwrite, then you must set the <b>msg._id</b> property to be a constant by the use of a previous function node.</p>
+    <p>This could be a unique constant or you could create one based on some other msg property.</p>
+    <p>Currently we do not limit or cap the collection size at all... this may well change.</p>
+    <p>You can also choose to <b>remove</b> items. To do so the <b>msg.payload</b> <i>MUST</i> contain an object that will select the items(s) to remove.
+    A blank object will delete <i>all of the objects</i> in the collection. You have been warned...</p>
+</script>
+
+<script type="text/x-red" data-template-name="mongodb in">
+    <div class="form-row">
+        <label for="node-input-service"><i class="icon-folder-close"></i> Service</label>
+        <select id="node-input-service">
+            <option value="" disabled></option>
+            <option value="_ext_">External service</option>
+        </select>
+    </div>
+    <div class="form-row hide" id="node-input-external-details">
+        <label for="node-input-mongodb"><i class="icon-bookmark"></i> Server</label>
+        <input type="text" id="node-input-mongodb">
+    </div>
+    <div class="form-row">
+        <label for="node-input-collection"><i class="icon-briefcase"></i> Collection</label>
+        <input type="text" id="node-input-collection" placeholder="collection">
+    </div>
+    <div class="form-row">
+        <label for="node-input-operation"><i class="fa fa-wrench"></i> Operation</label>
+        <select type="text" id="node-input-operation" style="display: inline-block; vertical-align: top;">
+            <option value="find">find</option>
+            <option value="count">count</option>
+            <option value="aggregate">aggregate</option>
+        </select>
+    </div>
+    <div class="form-row">
+        <label for="node-input-name"><i class="icon-tag"></i> Name</label>
+        <input type="text" id="node-input-name" placeholder="Name">
+    </div>
+</script>
+
+<script type="text/x-red" data-help-name="mongodb in">
+    <p>Calls a MongoDB collection method based on the selected operator.</p>
+    <p>Find queries a collection using the <b>msg.payload</b> as the query statement as per the .find() function. Optionally, you may also (via a function) set a <b>msg.projection</b> object to constrain the returned fields, a <b>msg.sort</b> object and a <b>msg.limit</b> object.</p>
+    <p>Count returns a count of the number of documents in a collection or matching a query using the <b>msg.payload</b> as the query statement.</p>
+    <p>Aggregate provides access to the aggregation pipeline using the <b>msg.payload</b> as the pipeline array.</p>
+    <p>See the <a href="http://docs.mongodb.org/manual/reference/method/db.collection.find/" target="new"><i>MongoDB collection methods docs</i></a> for examples.</p>
+    <p>The result is returned in <b>msg.payload</b>.</p>
+</script>
+
+<script type="text/javascript">
+    (function() {
+
+        function oneditprepare() {
+            var select = $('#node-input-service')
+            var node = this;
+            $.getJSON('mongodb/vcap/',function(data) {
+                var last = select.children().last();
+                var opts = [];
+                for (var i =0;i<data.length;i++) {
+                    opts.push('<option value="'+data[i].name+'"'+(node.service==data[i].name?" selected":"")+'>'+data[i].name+'</option>');
+                }
+                if (opts.length == 0) {
+                    node.service = "_ext_";
+                    select.find("option").filter(function() {return $(this).val() == node.service;}).attr('selected',true);
+                } else {
+                    last.before(opts.join(""));
+                }
+                select.change();
+            });
+            select.change(function() {
+                var service = select.val();
+                if (service == "_ext_") {
+                    $("#node-input-external-details").show();
+                } else {
+                    $("#node-input-external-details").hide();
+                }
+            });
+        }
+
+        function label() {
+            var mongoNode = RED.nodes.node(this.mongodb);
+            if (this.name) {
+                return this.name;
+            }
+            if (this.service == "_ext_") {
+                return (mongoNode?mongoNode.label()+" "+this.collection:"mongodb");
+            }
+            return this.service||"mongodb";
+        }
+
+        function validateServer(v) {
+            return this.service != "_ext_" || v!="_ADD_";
+        }
+
+        RED.nodes.registerType('mongodb out',{
+            category: 'storage-output',
+            color:"rgb(218, 196, 180)",
+            defaults: {
+                service: {value:"", required: true},
+                mongodb: { type:"mongodb",validate:validateServer},
+                name: {value:""},
+                collection: {value:"",required:true},
+                payonly: {value:false},
+                operation: {value:"store"}
+            },
+            inputs:1,
+            outputs:0,
+            icon: "mongodb.png",
+            align: "right",
+            label: label,
+            labelStyle: function() {
+                return this.name?"node_label_italic":"";
+            },
+            oneditprepare: oneditprepare
+        });
+
+
+        RED.nodes.registerType('mongodb in',{
+            category: 'storage-input',
+            color:"rgb(218, 196, 180)",
+            defaults: {
+                service: {value:"", required: true},
+                mongodb: { type:"mongodb",validate:validateServer},
+                name: {value:""},
+                collection: {value:"",required:true},
+                operation: {value:"find"}
+            },
+            inputs:1,
+            outputs:1,
+            icon: "mongodb.png",
+            label: label,
+            labelStyle: function() {
+                return this.name?"node_label_italic":"";
+            },
+            oneditprepare: oneditprepare
+        });
+    })();
+</script>
+
+

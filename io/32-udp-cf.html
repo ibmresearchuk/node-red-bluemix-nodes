@@ -1,0 +1,133 @@
+<!--
+  Copyright 2013,2014 IBM Corp.
+
+  Licensed under the Apache License, Version 2.0 (the "License");
+  you may not use this file except in compliance with the License.
+  You may obtain a copy of the License at
+
+  http://www.apache.org/licenses/LICENSE-2.0
+
+  Unless required by applicable law or agreed to in writing, software
+  distributed under the License is distributed on an "AS IS" BASIS,
+  WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+  See the License for the specific language governing permissions and
+  limitations under the License.
+-->
+
+<!--  The Output Node  -->
+<script type="text/x-red" data-template-name="udp out">
+    <div class="form-row">
+        <label for="node-input-port"><i class="fa fa-envelope"></i> Send a</label>
+        <select id="node-input-multicast" style='width:40%'>
+          <option value="false">udp message</option>
+          <option value="broad">broadcast message</option>
+          <option value="multi">multicast message</option>
+        </select>
+        to port <input type="text" id="node-input-port" placeholder="port" style="width: 70px">
+    </div>
+    <div class="form-row node-input-addr">
+        <label for="node-input-addr" id="node-input-addr-label"><i class="fa fa-list"></i> Address</label>
+        <input type="text" id="node-input-addr" placeholder="destination ip" style="width: 70%;">
+    </div>
+    <div class="form-row node-input-iface">
+        <label for="node-input-iface"><i class="fa fa-random"></i> Interface</label>
+        <input type="text" id="node-input-iface" placeholder="(optional) ip address of eth0">
+    </div>
+    <div class="form-row">
+        <label for="node-input-outport-type">&nbsp;</label>
+        <select id="node-input-outport-type">
+          <option id="node-input-outport-type-random" value="random">use random local port</option>
+          <option value="fixed">bind to local port</option>
+        </select>
+        <input type="text" id="node-input-outport"  style="width: 70px;" placeholder="port">
+    </div>
+    <div class="form-row">
+        <label>&nbsp;</label>
+        <input type="checkbox" id="node-input-base64" style="display: inline-block; width: auto; vertical-align: top;">
+        <label for="node-input-base64" style="width: 70%;">Decode Base64 encoded payload ?</label>
+    </div>
+    <div class="form-row">
+        <label for="node-input-name"><i class="fa fa-tag"></i> Name</label>
+        <input type="text" id="node-input-name" placeholder="Name">
+    </div>
+    <div class="form-tips">Tip: leave address and port blank if you want to set using <b>msg.ip</b> and <b>msg.port</b>.</div>
+    <script>
+        $("#node-input-multicast").change(function() {
+            var id = $("#node-input-multicast option:selected").val();
+            if (id !== "multi") {
+                $(".node-input-iface").hide();
+                $("#node-input-addr-label").html('<i class="fa fa-list"></i> Address');
+                $("#node-input-addr")[0].placeholder = 'destination ip';
+            }
+            else {
+                $(".node-input-iface").show();
+                $("#node-input-addr-label").html('<i class="fa fa-list"></i> Group');
+                $("#node-input-addr")[0].placeholder = '225.0.18.83';
+            }
+            if (id === "broad") {
+                $("#node-input-addr")[0].placeholder = '255.255.255.255';
+            }
+        });
+    </script>
+</script>
+
+<script type="text/x-red" data-help-name="udp out">
+    <p>This node sends <b>msg.payload</b> to the designated udp host and port. Supports multicast.</p>
+    <p>You may also use <b>msg.ip</b> and <b>msg.port</b> to set the destination values.<br/><b>Note</b>: the statically configured values have precedence.</p>
+    <p>If you select broadcast either set the address to the local broadcast ip address, or maybe try 255.255.255.255, which is the global broadcast address.</p>
+    <p>On some systems you may need to be root to use ports below 1024 and/or broadcast.</p>
+</script>
+
+<script type="text/javascript">
+    RED.nodes.registerType('udp out',{
+        category: 'output',
+        color:"Silver",
+        defaults: {
+            name: {value:""},
+            addr: {value:""},
+            iface: {value:""},
+            port: {value:""},
+            outport: {value:""},
+            base64: {value:false,required:true},
+            multicast: {value:"false"}
+        },
+        inputs:1,
+        outputs:0,
+        icon: "bridge-dash.png",
+        align: "right",
+        label: function() {
+            return this.name||"udp "+(this.addr+":"+this.port);
+        },
+        labelStyle: function() {
+            return this.name?"node_label_italic":"";
+        },
+        oneditprepare: function() {
+            var type = this.outport==""?"random":"fixed";
+            $("#node-input-outport-type option").filter(function() {
+                return $(this).val() == type;
+            }).attr('selected',true);
+
+
+            $("#node-input-outport-type").change(function() {
+                var type = $(this).children("option:selected").val();
+                if (type == "random") {
+                    $("#node-input-outport").val("").hide();
+                } else {
+                    $("#node-input-outport").show();
+                }
+            });
+
+            $("#node-input-outport-type").change();
+
+            $("#node-input-multicast").change(function() {
+                var type = $(this).children("option:selected").val();
+                if (type == "false") {
+                    $("#node-input-outport-type-random").html("bind to random local port");
+                } else {
+                    $("#node-input-outport-type-random").html("bind to target port");
+                }
+            });
+            $("#node-input-multicast").change();
+        }
+    });
+</script>

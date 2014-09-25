@@ -1,0 +1,61 @@
+<!--
+  Copyright 2013,2014 IBM Corp.
+
+  Licensed under the Apache License, Version 2.0 (the "License");
+  you may not use this file except in compliance with the License.
+  You may obtain a copy of the License at
+
+  http://www.apache.org/licenses/LICENSE-2.0
+
+  Unless required by applicable law or agreed to in writing, software
+  distributed under the License is distributed on an "AS IS" BASIS,
+  WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+  See the License for the specific language governing permissions and
+  limitations under the License.
+-->
+
+<script type="text/x-red" data-template-name="language-id">
+    <div class="form-row">
+        <label for="node-input-name"><i class="fa fa-tag"></i> Name</label>
+        <input type="text" id="node-input-name" placeholder="Name">
+    </div>
+    <div class="form-tips" id="node-warning" style="display: none"><i class="fa fa-warning"></i><b> Warning:</b> There is no Language Identification service connected
+    </div>
+</script>
+
+<script type="text/x-red" data-help-name="language-id">
+    <p>The Language Identification service analyzes UTF-8 encoded text, detects the language used in that text, and displays the associated 5-letter ISO language code. </p>
+    <p>The text to detect should be passed in on <b>msg.payload</b>.</p>
+    <p>The ISO language code will be returned on <b>msg.lang</b>.</p>
+</script>
+
+<script type="text/javascript">
+    (function() {
+
+        function oneditprepare() {
+            $.getJSON('language-id/vcap/', function(service) {
+                if (service === "{}") {
+                    $("#node-warning").show();
+                }
+            });
+        }
+
+        RED.nodes.registerType('language-id', {
+            category: 'analysis-function',
+            defaults: {
+                name: {value: ""}
+            },
+            color: "#8CC63F",
+            inputs: 1,
+            outputs: 1,
+            icon: "languageid.png",
+            label: function() {
+                return this.name || "language identification";
+            },
+            labelStyle: function() {
+                return this.name ? "node_label_italic" : "";
+            },
+            oneditprepare: oneditprepare
+        });
+    })();
+</script>
