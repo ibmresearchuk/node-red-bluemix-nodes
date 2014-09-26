@@ -1,7 +1,7 @@
 {
     "name" : "node-red-bluemix-nodes",
     "version" : "0.1.0",
-    "description" : "A collection of extra Node-RED nodes for bluemix.",
+    "description" : "A collection of extra Node-RED nodes for IBM Bluemix.",
     "dependencies" : {
         "when": "~3.x",
         "mongodb": "~1.4.x",
@@ -14,16 +14,13 @@
         "url":"https://github.com/node-red/node-red-bluemix-nodes"
     },
     "license": "Apache-v2.0",
-    "keywords": [ "node-red", "bluemix", "io", "tcp", "udp", "mongodb", "twilio", "watson" ],
+    "keywords": [ "node-red", "bluemix", "io", "tcp", "udp", "mongodb", "twilio" ],
     "node-red" : {
         "nodes" : {
             "tcp": "io/31-tcpin-cf.js",
             "udp": "io/32-udp-cf.js",
             "mongodb": "mongo/66-mongodb-cf.js",
-            "twilio": "twilio/56-twilio-cf.js",
-            "lid": "watson/lid.js",
-            "smt": "watson/smt.js",
-            "qa": "watson/qa.js"
+            "twilio": "twilio/56-twilio-cf.js"
         }
     }
 }
