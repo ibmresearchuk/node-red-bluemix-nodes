@@ -96,11 +96,11 @@
 <script type="text/x-red" data-help-name="mqlight out">
     <p>Provides an MQ Light send client.</p>
     <p>Sends the value passed in on <b>msg.payload</b> to the specified topic.</p>
+    <p>The topic can be passed in on <b>msg.topic</b>, however the topic in the node must be blank for this to take effect. If the topic is set in the node <b>msg.topic</b> will be overridden.</p>
 </script>
 
 <script type="text/javascript">
     (function() {
-
         RED.nodes.registerType('mqlight out', {
             category: 'output',
             defaults: {
