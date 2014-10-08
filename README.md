@@ -12,8 +12,11 @@ The current release contains the following nodes:
     - Connects to remote TCP port and replies to messages from an input client
 - UDP
     - Sends a message to the designated UDP host and port
+- MQ Light
+    - Provides MQ Light receive and send clients
+    - Publishes and subscribes to chosen topics
 - MongoDB
-    - Perform save, insert or remove operations
+    - Perform save, insert, update or remove operations
     - Perform find, count and aggregate operations
 - Twilio
     - Sends an SMS message using the Twilio service
