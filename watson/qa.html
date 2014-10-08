@@ -14,10 +14,17 @@
   limitations under the License.
 -->
 
-<script type="text/x-red" data-template-name="question">
+<script type="text/x-red" data-template-name="watson-question-answer">
     <div class="form-row">
         <label for="node-input-name"><i class="fa fa-tag"></i> Name</label>
         <input type="text" id="node-input-name" placeholder="Name">
+    </div>
+    <div class="form-row">
+        <label for="node-input-corpus"><i class="fa fa-book"></i> Corpus</label>
+        <select type="text" id="node-input-corpus" style="display: inline-block; vertical-align: top; width: 70%;">
+            <option value="healthcare">Healthcare</option>
+            <option value="travel">Travel</option>
+        </select>
     </div>
     <div class="form-row">
         <label for="node-input-output"><i class="fa fa-list"></i> Output</label>
@@ -26,16 +33,20 @@
             <option value="all">All answers</option>
         </select>
     </div>
-    <div class="form-tips" id="node-warning" style="display: none"><i class="fa fa-warning"></i><b> Warning:</b> There is no Machine Translation service connected
+    <div class="form-tips" id="node-warning" style="display: none"><i class="fa fa-warning"></i><b> Warning:</b> There is no Question and Answer service connected
     </div>
 </script>
 
-<script type="text/x-red" data-help-name="question">
-    <p>Using the Question Answer service you can connect to Watson, post questions, and receive responses.</p>
-    <p>The default corpus is Watson for Healthcare, which derives cognitive conclusions from documents about health concerns and diseases.</p>
+<script type="text/x-red" data-help-name="watson-question-answer">
+    <p>Using the Question and Answer service you can connect to Watson, post questions, and receive responses.</p>
+    <p>There are two default corpora to choose from.</p>
+    <ul>
+        <li><b>Watson for Healthcare</b>, which derives cognitive conclusions from documents about health concerns and diseases.</li>
+        <li><b>Watson for Travel</b>, which responds to questions based on cognitive analysis of a corpus that was initially created from documents about travel and associated locations.</li>
+    </ul>
     <p>The question you want to ask should be passed in on <b>msg.payload</b>.</p>
     <p>If you choose to only return the top answer, the answer will returned in <b>msg.payload</b> and the confidence of that answer in <b>msg.confidence</b>.</p>
-    <p>If you choose to return all answers, the results array will be returned in <b>msg.payload</b>. Each answer in the array will have a payload and confidence property.</p>
+    <p>If you choose to return all answers, the results array will be returned in <b>msg.payload</b>. Each answer in the array will have a <b>payload</b> and <b>confidence</b> property.</p>
 </script>
 
 <script type="text/javascript">
@@ -43,24 +54,26 @@
 
         function oneditprepare() {
             $.getJSON('question/vcap/', function(service) {
-                if (service === "{}") {
+                if (service !== "question_and_answer") {
                     $("#node-warning").show();
                 }
             });
         }
 
-        RED.nodes.registerType('question', {
-            category: 'analysis-function',
+        RED.nodes.registerType('watson-question-answer', {
+            category: 'IBM Watson',
             defaults: {
                 name: {value: ""},
-                output: {value: "top"}
+                output: {value: "top"},
+                corpus: {value: "healthcare"}
             },
             color: "#00b2ef",
             inputs: 1,
             outputs: 1,
             icon: "question.png",
+            paletteLabel: "question and answer",
             label: function() {
-                return this.name || "question answer";
+                return this.name || "question and answer";
             },
             labelStyle: function() {
                 return this.name ? "node_label_italic" : "";
