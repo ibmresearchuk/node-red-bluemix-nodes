@@ -24,10 +24,11 @@ module.exports = function(RED) {
     var service = services["machine_translation"] || "{}";
     
     var vcap = JSON.parse(process.env.VCAP_SERVICES || "{}");
-    var services = (vcap["machine_translation"]||[]).map(function(s) { return s.credentials.sids; });
+    var services = vcap["machine_translation"]||[];
+    var serviceList = services.map(function(s) { return s.credentials.sids; });
 
     RED.httpAdmin.get('/watson-translate/vcap', function(req, res) {
-        res.json(services);
+        res.json(serviceList);
     });
 
     function SMTNode(config) {
@@ -37,7 +38,7 @@ module.exports = function(RED) {
         if (services.length == 0) {
             node.error("No machine translation service bound");
         } else {
-            var cred = service[0].credentials;
+            var cred = services[0].credentials;
             var host = url.parse(cred.url);
             var username = cred.username;
             var password = cred.password;

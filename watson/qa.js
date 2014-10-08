@@ -19,10 +19,11 @@ module.exports = function(RED) {
     var url = require('url');
     
     var vcap = JSON.parse(process.env.VCAP_SERVICES || "{}");
-    var services = (vcap["question_and_answer"]||[]).map(function(s) { return s.name; });
+    var services = vcap["question_and_answer"]||[]);
+    var serviceList = services.map(function(s) { return s.name; });
     
     RED.httpAdmin.get('/watson-question-answer/vcap', function(req, res) {
-        res.json(services);
+        res.json(serviceList);
     });
 
     function QANode(config) {
@@ -32,7 +33,7 @@ module.exports = function(RED) {
         if (services.length == 0) {
             node.error("No question and answer service bound");
         } else {
-            var cred = service[0].credentials;
+            var cred = services[0].credentials;
             var host = cred.url;
             var username = cred.username;
             var password = cred.password;

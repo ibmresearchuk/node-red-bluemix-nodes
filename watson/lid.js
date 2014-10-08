@@ -20,10 +20,11 @@ module.exports = function(RED) {
     var url = require('url');
     
     var vcap = JSON.parse(process.env.VCAP_SERVICES || "{}");
-    var services = (vcap["language_identification"]||[]).map(function(s) { return s.name; });
+    var services = vcap["language_identification"]||[];
+    var serviceList = services.map(function(s) { return s.name; });
     
     RED.httpAdmin.get('/watson-language-identification/vcap', function(req,res) {
-        res.json(services);
+        res.json(serviceList);
     });
 
     function LIDNode(config) {
@@ -33,7 +34,7 @@ module.exports = function(RED) {
         if (services.length == 0) {
             node.error("No language identification service bound");
         } else {
-            var cred = service[0].credentials;
+            var cred = services[0].credentials;
             var host = url.parse(cred.url);
             var username = cred.username;
             var password = cred.password;

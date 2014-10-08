@@ -18,10 +18,11 @@ module.exports = function(RED) {
 "use strict";
     
     var vcap = JSON.parse(process.env.VCAP_SERVICES || "{}");
-    var services = (vcap.mqlight || []).map(function(s) { return s.name; });
+    var services = vcap.mqlight || [];
+    var serviceList = services.map(function(s) { return s.name; });
     
     RED.httpAdmin.get('/mqlight/vcap', function(req, res) {
-        res.json(services);
+        res.json(serviceList);
     });
     
     var mqlight = require('mqlight');
@@ -30,6 +31,7 @@ module.exports = function(RED) {
         RED.nodes.createNode(this, n);
         this.service = n.service || "";
         this.topic = n.topic || "";
+
         var node = this;
 
         if (node.service === "") {
@@ -39,7 +41,7 @@ module.exports = function(RED) {
                 node.warn("No topic set in MQ Light in node");
                 return;
             }
-
+            
             var serv = services.filter(function(s) {
                 return s.name === node.service;
             })[0];
@@ -54,23 +56,24 @@ module.exports = function(RED) {
             var recvClient = mqlight.createClient(opts, function(err) {
                 if (err) {
                     node.error('Connection to ' + opts.service + ' using client-id ' + recvClient.id + ' failed: ' + err);
-                }
-                recvClient.subscribe(node.topic, function(err) {
-                    if (err) {
-                        node.error("Failed to subscribe: " + err);
-                    }
-                });
-                recvClient.on('message', function(data, delivery) {
-                    var msg = {
-                        topic: delivery.message.topic,
-                        payload: data,
-                        _session: {
-                            type: "mqlight",
-                            id: recvClient.id
+                } else {
+                    recvClient.subscribe(node.topic, function(err) {
+                        if (err) {
+                            node.error("Failed to subscribe: " + err);
                         }
-                    };
-                    node.send(msg);
-                });
+                    });
+                    recvClient.on('message', function(data, delivery) {
+                        var msg = {
+                            topic: delivery.message.topic,
+                            payload: data,
+                            _session: {
+                                type: "mqlight",
+                                id: recvClient.id
+                            }
+                        };
+                        node.send(msg);
+                    });
+                }
             });
             node.on("close", function () {
                 recvClient.stop();
@@ -102,22 +105,23 @@ module.exports = function(RED) {
             var sendClient = mqlight.createClient(opts, function(err) {
                 if (err) {
                     node.error('Connection to ' + opts.service + ' using client-id ' + sendClient.id + ' failed: ' + err);
-                }
-                node.on("input", function(msg) {
-                    if (node.topic === "") {
-                        if (msg.topic) {
-                            node.topic = msg.topic;
-                        } else {
-                            node.warn("No topic set in MQ Light out node");
-                            return;
+                } else {
+                    node.on("input", function(msg) {
+                        if (node.topic === "") {
+                            if (msg.topic) {
+                                node.topic = msg.topic;
+                            } else {
+                                node.warn("No topic set in MQ Light out node");
+                                return;
+                            }
                         }
-                    }
-                    sendClient.send(node.topic, msg.payload, function(err) {
-                        if (err) {
-                            node.error(err);
-                        }
+                        sendClient.send(node.topic, msg.payload, function(err) {
+                            if (err) {
+                                node.error(err);
+                            }
+                        });
                     });
-                });
+                }
             });
             node.on("close", function () {
                 sendClient.stop();
