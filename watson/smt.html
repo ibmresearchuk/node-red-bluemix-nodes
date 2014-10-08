@@ -25,7 +25,7 @@
             <option value="">set translation language code in msg.lang</option>
         </select>
     </div>
-    <div class="form-tips" id="node-warning" style="display: none"><i class="fa fa-warning"></i><b> Warning:</b> There is no Machine Translation service connected
+    <div class="form-tips" id="node-missing-service-warning" style="display: none"><i class="fa fa-warning"></i><b> Warning:</b> There is no Machine Translation service connected
     </div>
 </script>
 
@@ -42,10 +42,12 @@
     (function() {
 
         function oneditprepare() {
-            $.getJSON('translate/vcap/', function(sids) {
-                if (sids === "") {
-                    $("#node-warning").show();
+            $.getJSON('watson-translate/vcap/', function(services) {
+                if (services.length == 0) {
+                    $("#node-missing-service-warning").show();
                 } else {
+                    // Assume service[0]
+                    var sids = services[0];
                     var select = $('#node-input-language');
                     for (var i = 0; i < sids.length; ++i) {
                         var sid = sids[i].sid;

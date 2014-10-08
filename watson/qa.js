@@ -14,27 +14,23 @@
  * limitations under the License.
  **/
 
-var https = require('https');
-var url = require('url');
-
-var services = JSON.parse(process.env.VCAP_SERVICES || "{}");
-var service = services["question_and_answer"] || "{}";
-
-var RED = require(process.env.NODE_RED_HOME + "/red/red");
-
-RED.httpAdmin.get('/question/vcap', function(req, res) {
-    res.send((service === "{}")?"":"question_and_answer");
-});
-
 module.exports = function(RED) {
+    var https = require('https');
+    var url = require('url');
+    
+    var vcap = JSON.parse(process.env.VCAP_SERVICES || "{}");
+    var services = (vcap["question_and_answer"]||[]).map(function(s) { return s.name; });
+    
+    RED.httpAdmin.get('/watson-question-answer/vcap', function(req, res) {
+        res.json(services);
+    });
+
     function QANode(config) {
         RED.nodes.createNode(this, config);
         var node = this;
 
-        if (service === "{}") {
-            this.on('input', function(msg) {
-                node.error("No question and answer service bound");
-            });
+        if (services.length == 0) {
+            node.error("No question and answer service bound");
         } else {
             var cred = service[0].credentials;
             var host = cred.url;

@@ -14,29 +14,24 @@
  * limitations under the License.
  **/
 
-var http = require('http');
-var https = require('https');
-var url = require('url');
-
-// parse the VCAP_SERVICES env variable and get the http rest URI
-var services = JSON.parse(process.env.VCAP_SERVICES || "{}");
-var service = services["language_identification"] || "{}";
-
-var RED = require(process.env.NODE_RED_HOME+"/red/red");
-
-RED.httpAdmin.get('/language-id/vcap', function(req,res) {
-    res.send((service==="{}")?"":"language_identification");
-});
-
 module.exports = function(RED) {
+    var http = require('http');
+    var https = require('https');
+    var url = require('url');
+    
+    var vcap = JSON.parse(process.env.VCAP_SERVICES || "{}");
+    var services = (vcap["language_identification"]||[]).map(function(s) { return s.name; });
+    
+    RED.httpAdmin.get('/watson-language-identification/vcap', function(req,res) {
+        res.json(services);
+    });
+
     function LIDNode(config) {
         RED.nodes.createNode(this,config);
         var node = this;
-
-        if (service === "{}") {
-            this.on('input', function(msg) {
-                node.error("No language identification service bound");
-            });
+        
+        if (services.length == 0) {
+            node.error("No language identification service bound");
         } else {
             var cred = service[0].credentials;
             var host = url.parse(cred.url);

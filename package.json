@@ -23,8 +23,8 @@
             "mqlight": "mqlight/mqlight.js",
             "mongodb": "mongo/66-mongodb-cf.js",
             "twilio": "twilio/56-twilio-cf.js",
-            "watson-language-identification": "watson/lid.js",
             "watson-question-answer": "watson/qa.js",
+            "watson-language-identification": "watson/lid.js",
             "watson-translate": "watson/smt.js"
             
         }

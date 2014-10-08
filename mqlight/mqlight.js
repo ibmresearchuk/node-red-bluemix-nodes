@@ -14,17 +14,16 @@
  * limitations under the License.
  **/
 
-var vcap = JSON.parse(process.env.VCAP_SERVICES || "{}");
-var services = vcap.mqlight || "{}";
-
-var RED = require(process.env.NODE_RED_HOME + "/red/red");
-
-RED.httpAdmin.get('/mqlight/vcap', function(req, res) {
-    res.send(JSON.stringify(services));
-});
-
 module.exports = function(RED) {
-    "use strict";
+"use strict";
+    
+    var vcap = JSON.parse(process.env.VCAP_SERVICES || "{}");
+    var services = (vcap.mqlight || []).map(function(s) { return s.name; });
+    
+    RED.httpAdmin.get('/mqlight/vcap', function(req, res) {
+        res.json(services);
+    });
+    
     var mqlight = require('mqlight');
 
     function MQLightIn(n) {
@@ -126,4 +125,4 @@ module.exports = function(RED) {
         }
     }
     RED.nodes.registerType("mqlight out", MQLightOut);
-};
+}
