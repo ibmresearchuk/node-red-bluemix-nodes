@@ -19,10 +19,6 @@ module.exports = function(RED) {
     var https = require('https');
     var url = require('url');
     
-    // parse the VCAP_SERVICES env variable and get the http rest URI
-    var services = JSON.parse(process.env.VCAP_SERVICES || "{}");
-    var service = services["machine_translation"] || "{}";
-    
     var vcap = JSON.parse(process.env.VCAP_SERVICES || "{}");
     var services = vcap["machine_translation"]||[];
     var serviceList = services.map(function(s) { return s.credentials.sids; });

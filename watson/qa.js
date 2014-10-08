@@ -19,7 +19,7 @@ module.exports = function(RED) {
     var url = require('url');
     
     var vcap = JSON.parse(process.env.VCAP_SERVICES || "{}");
-    var services = vcap["question_and_answer"]||[]);
+    var services = vcap["question_and_answer"]||[];
     var serviceList = services.map(function(s) { return s.name; });
     
     RED.httpAdmin.get('/watson-question-answer/vcap', function(req, res) {
