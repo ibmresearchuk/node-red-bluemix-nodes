@@ -14,7 +14,7 @@
   limitations under the License.
 -->
 
-<script type="text/x-red" data-template-name="language-id">
+<script type="text/x-red" data-template-name="watson-language-identification">
     <div class="form-row">
         <label for="node-input-name"><i class="fa fa-tag"></i> Name</label>
         <input type="text" id="node-input-name" placeholder="Name">
@@ -23,7 +23,7 @@
     </div>
 </script>
 
-<script type="text/x-red" data-help-name="language-id">
+<script type="text/x-red" data-help-name="watson-language-identification">
     <p>The Language Identification service analyzes UTF-8 encoded text, detects the language used in that text, and displays the associated 5-letter ISO language code. </p>
     <p>The text to detect should be passed in on <b>msg.payload</b>.</p>
     <p>The ISO language code will be returned on <b>msg.lang</b>.</p>
@@ -34,14 +34,14 @@
 
         function oneditprepare() {
             $.getJSON('language-id/vcap/', function(service) {
-                if (service === "{}") {
+                if (service !== "language_identification") {
                     $("#node-warning").show();
                 }
             });
         }
 
-        RED.nodes.registerType('language-id', {
-            category: 'analysis-function',
+        RED.nodes.registerType('watson-language-identification', {
+            category: 'IBM Watson',
             defaults: {
                 name: {value: ""}
             },
@@ -49,6 +49,7 @@
             inputs: 1,
             outputs: 1,
             icon: "languageid.png",
+            paletteLabel: "language identification",
             label: function() {
                 return this.name || "language identification";
             },

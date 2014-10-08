@@ -20,12 +20,12 @@ var url = require('url');
 
 // parse the VCAP_SERVICES env variable and get the http rest URI
 var services = JSON.parse(process.env.VCAP_SERVICES || "{}");
-var service = services["txtlidstg"] || "{}";
+var service = services["language_identification"] || "{}";
 
 var RED = require(process.env.NODE_RED_HOME+"/red/red");
 
 RED.httpAdmin.get('/language-id/vcap', function(req,res) {
-    res.send(JSON.stringify(service));
+    res.send((service==="{}")?"":"language_identification");
 });
 
 module.exports = function(RED) {
@@ -38,28 +38,27 @@ module.exports = function(RED) {
                 node.error("No language identification service bound");
             });
         } else {
-            var cred = service[0]["credentials"];
-            var uri = url.parse(cred["uri"]);
-            var uid = cred["userid"];
-            var passwd = cred["password"];
-            var sids = cred["sids"];
+            var cred = service[0].credentials;
+            var host = url.parse(cred.url);
+            var username = cred.username;
+            var password = cred.password;
+            var sids = cred.sids;
 
             this.on('input', function(msg) {
                 // chooses the first lid service bound
-                var sid = sids[0]["sid"];
-                // var rt = config.rt || "text";
+                var sid = sids[0].sid;
 
                 // prepare HTTP request, input is stored in "msg.payload"
                 var rqt = "rt=text&sid=" + encodeURIComponent(sid) +
                 "&txt=" + encodeURIComponent(msg.payload);
 
                 var options = {
-                    hostname: uri.hostname,
-                    port: uri.port,
-                    path: uri.path,
-                    protocl: uri.protocol,
+                    hostname: host.hostname,
+                    port: host.port,
+                    path: host.path,
+                    protocl: host.protocol,
                     method: 'POST',
-                    auth: uid+":"+passwd,
+                    auth: username+":"+password,
                     headers: {
                         "Connection": "keep-alive",
                         "Content-Type": "application/x-www-form-urlencoded",
@@ -68,7 +67,7 @@ module.exports = function(RED) {
                 };
 
                 // issue http request
-                var httpclient = (uri.protocol=="https:" ? https : http);
+                var httpclient = (host.protocol=="https:" ? https : http);
                 var client = httpclient.request(options, function(resp) {
                     resp.setEncoding('utf8');
                     var rspbody = "";
@@ -96,5 +95,5 @@ module.exports = function(RED) {
             });
         }
     }
-    RED.nodes.registerType("language-id",LIDNode);
-}
+    RED.nodes.registerType("watson-language-identification",LIDNode);
+};

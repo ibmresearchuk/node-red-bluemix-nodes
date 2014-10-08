@@ -14,7 +14,7 @@
   limitations under the License.
 -->
 
-<script type="text/x-red" data-template-name="translate">
+<script type="text/x-red" data-template-name="watson-translate">
     <div class="form-row">
         <label for="node-input-name"><i class="fa fa-tag"></i> Name</label>
         <input type="text" id="node-input-name" placeholder="Name">
@@ -22,16 +22,19 @@
     <div class="form-row">
         <label for="node-input-language"><i class="fa fa-comments-o"></i> Language</label>
         <select type="text" id="node-input-language" style="display: inline-block; vertical-align:top; width: 70%;">
+            <option value="">set translation language code in msg.lang</option>
         </select>
     </div>
     <div class="form-tips" id="node-warning" style="display: none"><i class="fa fa-warning"></i><b> Warning:</b> There is no Machine Translation service connected
     </div>
 </script>
 
-<script type="text/x-red" data-help-name="translate">
+<script type="text/x-red" data-help-name="watson-translate">
     <p>The Machine Translation service enables you to translate text from one language to another.</p>
     <p>The text to translate should be passed in on <b>msg.payload</b>.</p>
     <p>The translated text will be returned on <b>msg.payload</b>.</p>
+    <p>You can set the translation language code in <b>msg.lang</b>. If another language is set in the node then <b>msg.lang</b> will be overridden.</p>
+    <p>The translation language code should be in the form <i>'mt-from-to'</i> where <i>from</i> and <i>to</i> are language codes, eg. enus. If the translation language code passed in is invalid, the message will not be translated.</p>
 </script>
 
 <script type="text/javascript">
@@ -39,14 +42,11 @@
     (function() {
 
         function oneditprepare() {
-            $.getJSON('translate/vcap/', function(service) {
-                if (service === "{}") {
+            $.getJSON('translate/vcap/', function(sids) {
+                if (sids === "") {
                     $("#node-warning").show();
                 } else {
                     var select = $('#node-input-language');
-                    var cred = service[0]["credentials"];
-                    var sids = cred["sids"];
-
                     for (var i = 0; i < sids.length; ++i) {
                         var sid = sids[i].sid;
                         var option = "<option value=\"" + sid + "\">"+ sids[i].description + "</option>";
@@ -56,16 +56,17 @@
             });
         }
 
-        RED.nodes.registerType('translate',{
-            category: 'analysis-function',
+        RED.nodes.registerType('watson-translate',{
+            category: 'IBM Watson',
             defaults: {
                 name: {value: ""},
-                language: {value: "", required: true}
+                language: {value: ""}
             },
             color: "#8CC63F",
             inputs: 1,
             outputs: 1,
             icon: "translation.png",
+            paletteLabel: "machine translation",
             label: function() {
                 return this.name || "machine translation";
             },

@@ -18,12 +18,12 @@ var https = require('https');
 var url = require('url');
 
 var services = JSON.parse(process.env.VCAP_SERVICES || "{}");
-var service = services["Watson QAAPI-0.1"] || "{}";
+var service = services["question_and_answer"] || "{}";
 
 var RED = require(process.env.NODE_RED_HOME + "/red/red");
 
 RED.httpAdmin.get('/question/vcap', function(req, res) {
-    res.send(JSON.stringify(service));
+    res.send((service === "{}")?"":"question_and_answer");
 });
 
 module.exports = function(RED) {
@@ -33,39 +33,36 @@ module.exports = function(RED) {
 
         if (service === "{}") {
             this.on('input', function(msg) {
-                node.error("No question answer service bound");
+                node.error("No question and answer service bound");
             });
         } else {
-            // retrieve the credential information from VCAP_SERVICES for Watson QAAPI
-            var host   = service[0].credentials.url;
-            var passwd = service[0].credentials.password;
-            var userid = service[0].credentials.userid;
+            var cred = service[0].credentials;
+            var host = cred.url;
+            var username = cred.username;
+            var password = cred.password;
 
             this.on('input', function(msg) {
-                var output = config.output || "";
+                var output = config.output || "top";
+                var corpus = config.corpus || "healthcare";
 
-                // set required headers
                 var headers = {
                     'Content-Type'  :'application/json',
+                    'Accept':'application/json',
                     'X-synctimeout' : '30',
-                    'Authorization' : "Basic " + new Buffer(userid+":"+passwd).toString("base64")
+                    'Authorization' : "Basic " + new Buffer(username+":"+password).toString("base64")
                 };
 
-                // create the request options to POST our question to Watson
-                var parts = url.parse(host);
+                var parts = url.parse(host + '/v1/question/' + corpus);
                 var options = {
                     host: parts.hostname,
-                    port: 443,
+                    port: parts.port,
                     path: parts.pathname,
                     method: 'POST',
-                    headers: headers,
-                    rejectUnauthorized: false, // ignore certificates
-                    requestCert: true,
-                    agent: false
+                    headers: headers
                 };
 
-                // Create a request to POST to Watson
                 var req = https.request(options, function(result) {
+                    result.setEncoding('utf-8');
                     var rspbody = "";
 
                     result.on("data", function(chunk) {
@@ -74,30 +71,38 @@ module.exports = function(RED) {
 
                     result.on('end', function() {
                         var json = JSON.parse(rspbody);
-                        var answers = json.question.answers;
+                        var answers = json[0].question.answers;
+                        var evidenceList = json[0].question.evidencelist;
 
                         if (answers) {
                             if (output === "top") {
-                                msg.payload = answers[0].formattedText.replace(/<(?:.|\n)*?>/gm, '');
+                                if (answers[0].pipeline.indexOf("TAO") > -1) {
+                                    msg.payload = evidenceList[0].text;
+                                } else {
+                                    msg.payload = answers[0].text;
+                                }
                                 msg.confidence = answers[0].confidence;
                             } else if (output === "all") {
                                 var all = [];
 
-                                answers.forEach(function (answer) {
-                                    var unformatted = answer.formattedText.replace(/<(?:.)*?>/gm, " ").replace(/\n/g, " ").replace(/\s{2,}/g, " ");
+                                for (var i = 0; i < answers.length; ++i) {
+                                    var answerText;
+                                    if (answers[i].pipeline.indexOf("TAO") > -1) {
+                                        answerText = evidenceList[i].text;
+                                    } else {
+                                        answerText = answers[i].text;
+                                    }
                                     var ans = {
-                                        payload: unformatted,
-                                        confidence: answer.confidence
+                                        payload: answerText,
+                                        confidence: answers[i].confidence
                                     };
                                     all.push(ans);
-                                });
-
+                                }
                                 msg.payload = all;
                             }
                         } else {
                             msg.payload = "";
                         }
-
                         node.send(msg);
                     });
                 });
@@ -106,19 +111,15 @@ module.exports = function(RED) {
                     node.error(e);
                 });
 
-                // items returned not working
                 var question = {
                     question: {
-                        questionText: msg.payload,
-                        formattedAnswer: true
+                        questionText: msg.payload
                     }
                 };
-
                 req.write(JSON.stringify(question));
                 req.end();
-
             });
         }
     }
-    RED.nodes.registerType("question",QANode);
-}
+    RED.nodes.registerType("watson-question-answer",QANode);
+};
