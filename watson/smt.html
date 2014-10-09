@@ -21,7 +21,7 @@
     </div>
     <div class="form-row">
         <label for="node-input-language"><i class="fa fa-comments-o"></i> Language</label>
-        <select type="text" id="node-input-language" style="display: inline-block; vertical-align:top; width: 70%;">
+        <select type="text" id="node-input-language" style="display: inline-block; vertical-align:middle; width: 70%;">
             <option value="">set translation language code in msg.lang</option>
         </select>
     </div>
@@ -42,6 +42,7 @@
     (function() {
 
         function oneditprepare() {
+            var node = this;
             $.getJSON('watson-translate/vcap/', function(services) {
                 if (services.length == 0) {
                     $("#node-missing-service-warning").show();
@@ -54,6 +55,7 @@
                         var option = "<option value=\"" + sid + "\">"+ sids[i].description + "</option>";
                         select.append(option);
                     }
+                    select.find("option").filter(function() {return $(this).val() === node.language;}).attr('selected', true);
                 }
             });
         }
