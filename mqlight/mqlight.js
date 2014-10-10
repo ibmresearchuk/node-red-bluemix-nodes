@@ -73,14 +73,19 @@ module.exports = function(RED) {
                         node.send(msg);
                     });
                     node.log("Subscribing to "+node.topic+(node.share?+" ["+node.share+"]":""));
-                    node.log("Node share: ["+node.share+"]");
-                    recvClient.subscribe(node.topic, node.share, function(err) {
+                    var subscribeCallback = function(err) {
                         if (err) {
                             node.error("Failed to subscribe: " + err);
                         } else {
                             node.log("Subscribed to "+node.topic+(node.share?+" ["+node.share+"]":""));
                         }
-                    });
+                    };
+                    
+                    if (node.share) {
+                        recvClient.subscribe(node.topic, node.share,subscribeCallback);
+                    } else {
+                        recvClient.subscribe(node.topic,subscribeCallback);
+                    }                        
                 }
             });
             node.on("close", function (done) {
