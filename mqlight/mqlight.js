@@ -31,7 +31,12 @@ module.exports = function(RED) {
         RED.nodes.createNode(this, n);
         this.service = n.service || "";
         this.topic = n.topic || "";
+        this.share n.share || "";
 
+        if (this.share == "") {
+            this.share = null;
+        }
+        
         var node = this;
 
         if (node.service === "") {
@@ -57,11 +62,6 @@ module.exports = function(RED) {
                 if (err) {
                     node.error('Connection to ' + opts.service + ' using client-id ' + recvClient.id + ' failed: ' + err);
                 } else {
-                    recvClient.subscribe(node.topic, function(err) {
-                        if (err) {
-                            node.error("Failed to subscribe: " + err);
-                        }
-                    });
                     recvClient.on('message', function(data, delivery) {
                         var msg = {
                             topic: delivery.message.topic,
@@ -71,12 +71,20 @@ module.exports = function(RED) {
                                 id: recvClient.id
                             }
                         };
+                        if (delivery.destination.share) {
+                            msg.share = delivery.destination.share;
+                        }
                         node.send(msg);
+                    });
+                    recvClient.subscribe(node.topic, node.share, function(err) {
+                        if (err) {
+                            node.error("Failed to subscribe: " + err);
+                        }
                     });
                 }
             });
-            node.on("close", function () {
-                recvClient.stop();
+            node.on("close", function (done) {
+                recvClient.stop(done);
             });
         }
     }
@@ -123,8 +131,8 @@ module.exports = function(RED) {
                     });
                 }
             });
-            node.on("close", function () {
-                sendClient.stop();
+            node.on("close", function (done) {
+                sendClient.stop(done);
             });
         }
     }

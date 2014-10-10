@@ -1,6 +1,6 @@
 {
     "name" : "node-red-bluemix-nodes",
-    "version" : "0.2.0",
+    "version" : "0.2.1",
     "description" : "A collection of extra Node-RED nodes for IBM Bluemix.",
     "dependencies" : {
         "when": "~3.x",
