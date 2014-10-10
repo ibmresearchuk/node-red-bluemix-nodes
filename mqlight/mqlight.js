@@ -31,12 +31,8 @@ module.exports = function(RED) {
         RED.nodes.createNode(this, n);
         this.service = n.service || "";
         this.topic = n.topic || "";
-        this.share = n.share || "";
+        this.share = n.share || null;
 
-        if (this.share == "") {
-            this.share = null;
-        }
-        
         var node = this;
 
         if (node.service === "") {
@@ -76,9 +72,12 @@ module.exports = function(RED) {
                         }
                         node.send(msg);
                     });
+                    node.log("Subscribing to "+node.topic+(node.share?+" ["+node.share+"]":""));
                     recvClient.subscribe(node.topic, node.share, function(err) {
                         if (err) {
                             node.error("Failed to subscribe: " + err);
+                        } else {
+                            node.log("Subscribed to "+node.topic+(node.share?+" ["+node.share+"]":""));
                         }
                     });
                 }
