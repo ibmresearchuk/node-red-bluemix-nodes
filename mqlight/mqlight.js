@@ -73,7 +73,7 @@ module.exports = function(RED) {
                         node.send(msg);
                     });
                     node.log("Subscribing to "+node.topic+(node.share?+" ["+node.share+"]":""));
-                    recvClient.subscribe(node.topic, node.share, function(err) {
+                    recvClient.subscribe(node.topic, function(err) {
                         if (err) {
                             node.error("Failed to subscribe: " + err);
                         } else {
