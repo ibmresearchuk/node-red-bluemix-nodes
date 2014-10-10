@@ -31,7 +31,7 @@ module.exports = function(RED) {
         RED.nodes.createNode(this, n);
         this.service = n.service || "";
         this.topic = n.topic || "";
-        this.share n.share || "";
+        this.share = n.share || "";
 
         if (this.share == "") {
             this.share = null;
