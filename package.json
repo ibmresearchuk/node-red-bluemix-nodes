@@ -1,12 +1,12 @@
 {
     "name" : "node-red-bluemix-nodes",
-    "version" : "0.2.1",
+    "version" : "0.2.2",
     "description" : "A collection of extra Node-RED nodes for IBM Bluemix.",
     "dependencies" : {
         "when": "~3.x",
         "mongodb": "~1.4.x",
         "mqlight" : ">=1.0.2014091000",
-        "cf-env":"~0.1.1",
+        "cfenv":"~1.0.0",
         "twilio":"~1.6.0",
         "request":"~2.40.0"
     },

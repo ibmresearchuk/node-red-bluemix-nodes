@@ -17,14 +17,14 @@
 module.exports = function(RED) {
     var when = require("when");
     
-    var cfEnv = require("cf-env");
-    var cfCore = cfEnv.getCore();
+    var cfenv = require("cfenv");
+    var appEnv = cfenv.getAppEnv();
     
     var services = [];
     
-    for (var i in cfCore.services) {
+    for (var i in appEnv.services) {
         if (i.match(/^(TimeSeriesDatabase|JSONDB|mongodb|mongolab)/i)) {
-            services = services.concat(cfCore.services[i].map(function(v) {
+            services = services.concat(appEnv.services[i].map(function(v) {
                 return {name:v.name,label:v.label};
             }));
         }
@@ -176,7 +176,7 @@ module.exports = function(RED) {
                 this.url = mongoConfig.url;
             }
         } else if (n.service !== "") {
-            var mongoConfig = cfEnv.getService(n.service);
+            var mongoConfig = appEnv.getService(n.service);
             if (mongoConfig) {
                 this.url = mongoConfig.credentials.url || mongoConfig.credentials.uri || mongoConfig.credentials.json_url;
             }
@@ -286,7 +286,7 @@ module.exports = function(RED) {
                 this.url = mongoConfig.url;
             }
         } else if (n.service !== "") {
-            var mongoConfig = cfEnv.getService(n.service);
+            var mongoConfig = appEnv.getService(n.service);
             if (mongoConfig) {
                 this.url = mongoConfig.credentials.url || mongoConfig.credentials.uri || mongoConfig.credentials.json_url;
             }

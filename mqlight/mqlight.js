@@ -17,8 +17,10 @@
 module.exports = function(RED) {
 "use strict";
     
-    var vcap = JSON.parse(process.env.VCAP_SERVICES || "{}");
-    var services = vcap.mqlight || [];
+    var cfenv = require("cfenv");
+    var appEnv = cfenv.getAppEnv();
+
+    var services = appEnv.mqlight || [];
     var serviceList = services.map(function(s) { return s.name; });
     
     RED.httpAdmin.get('/mqlight/vcap', function(req, res) {
