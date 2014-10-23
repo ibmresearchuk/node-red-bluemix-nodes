@@ -20,7 +20,7 @@ module.exports = function(RED) {
     var cfenv = require("cfenv");
     var appEnv = cfenv.getAppEnv();
 
-    var services = appEnv.mqlight || [];
+    var services = appEnv.services.mqlight || [];
     var serviceList = services.map(function(s) { return s.name; });
     
     RED.httpAdmin.get('/mqlight/vcap', function(req, res) {
