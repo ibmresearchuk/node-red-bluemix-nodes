@@ -16,12 +16,12 @@
 
 module.exports = function(RED) {
     var when = require("when");
-    
+
     var cfenv = require("cfenv");
     var appEnv = cfenv.getAppEnv();
-    
+
     var services = [];
-    
+
     for (var i in appEnv.services) {
         if (i.match(/^(TimeSeriesDatabase|JSONDB|mongodb|mongolab)/i)) {
             services = services.concat(appEnv.services[i].map(function(v) {
@@ -29,17 +29,17 @@ module.exports = function(RED) {
             }));
         }
     }
-    
+
     function ensureValidSelectorObject(selector) {
         if (selector != null && (typeof selector != 'object' || Buffer.isBuffer(selector))) {
             return {};
         }
         return selector;
     }
-    
+
     var mongo = require('mongodb');
     var MongoClient = mongo.MongoClient;
-    
+
     function MongoNode(n) {
         RED.nodes.createNode(this,n);
         this.hostname = n.hostname;
@@ -51,25 +51,25 @@ module.exports = function(RED) {
             this.username = credentials.user;
             this.password = credentials.password;
         }
-    
+
         var url = "mongodb://";
         if (this.username && this.password) {
             url += this.username+":"+this.password+"@";
         }
         url += this.hostname+":"+this.port+"/"+this.db;
-    
+
         this.url = url;
     }
-    
+
     RED.nodes.registerType("mongodb",MongoNode);
-    
+
     var querystring = require('querystring');
-    
+
     RED.httpAdmin.get('/mongodb/vcap', function(req,res) {
         res.send(JSON.stringify(services));
     });
-    
-    
+
+
     RED.httpAdmin.get('/mongodb/:id',function(req,res) {
         var credentials = RED.nodes.getCredentials(req.params.id);
         if (credentials) {
@@ -78,12 +78,12 @@ module.exports = function(RED) {
             res.send(JSON.stringify({}));
         }
     });
-    
+
     RED.httpAdmin.delete('/mongodb/:id',function(req,res) {
         RED.nodes.deleteCredentials(req.params.id);
         res.send(200);
     });
-    
+
     RED.httpAdmin.post('/mongodb/:id',function(req,res) {
         var body = "";
         req.on('data', function(chunk) {
@@ -106,11 +106,11 @@ module.exports = function(RED) {
             res.send(200);
         });
     });
-    
-    
+
+
     var ConnectionPool = function() {
         var clients = {};
-    
+
         return {
             get: function(url) {
                 if (!clients[url]) {
@@ -155,12 +155,12 @@ module.exports = function(RED) {
                     }
                 }
             }
-    
+
         }
-    
+
     }();
-    
-    
+
+
     function MongoOutNode(n) {
         RED.nodes.createNode(this,n);
         this.collection = n.collection;
@@ -169,7 +169,7 @@ module.exports = function(RED) {
         this.upsert = n.upsert || false;
         this.multi = n.multi || false;
         this.operation = n.operation;
-    
+
         if (n.service === "_ext_") {
             var mongoConfig = RED.nodes.getNode(this.mongodb);
             if (mongoConfig) {
@@ -181,7 +181,7 @@ module.exports = function(RED) {
                 this.url = mongoConfig.credentials.url || mongoConfig.credentials.uri || mongoConfig.credentials.json_url;
             }
         }
-    
+
         if (this.url) {
             var node = this;
             ConnectionPool.get(this.url).then(function(db) {
@@ -190,7 +190,7 @@ module.exports = function(RED) {
                     coll = db.collection(node.collection);
                 }
                 node.on("input", function(msg) {
-                    if (!coll) {
+                    if (!node.collection) {
                         if (msg.collection) {
                             coll = db.collection(msg.collection);
                         } else {
@@ -244,7 +244,7 @@ module.exports = function(RED) {
                             upsert: node.upsert,
                             multi: node.multi
                         };
-    
+
                         coll.update(query, payload, options, function(err, item) {
                             if (err) {
                                 node.error(err);
@@ -269,17 +269,17 @@ module.exports = function(RED) {
         } else {
             this.error("missing mongodb configuration");
         }
-    
+
     }
     RED.nodes.registerType("mongodb out",MongoOutNode);
-    
-    
+
+
     function MongoInNode(n) {
         RED.nodes.createNode(this,n);
         this.collection = n.collection;
         this.mongodb = n.mongodb;
         this.operation = n.operation || "find";
-    
+
         if (n.service === "_ext_") {
             var mongoConfig = RED.nodes.getNode(this.mongodb);
             if (mongoConfig) {
@@ -291,7 +291,7 @@ module.exports = function(RED) {
                 this.url = mongoConfig.credentials.url || mongoConfig.credentials.uri || mongoConfig.credentials.json_url;
             }
         }
-    
+
         if (this.url) {
             var node = this;
             ConnectionPool.get(this.url).then(function(db) {
@@ -300,7 +300,7 @@ module.exports = function(RED) {
                     coll = db.collection(node.collection);
                 }
                 node.on("input", function(msg) {
-                    if (!coll) {
+                    if (!node.collection) {
                         if (msg.collection) {
                             coll = db.collection(msg.collection);
                         } else {
