@@ -122,15 +122,16 @@ module.exports = function(RED) {
                     node.error('Connection to ' + opts.service + ' using client-id ' + sendClient.id + ' failed: ' + err);
                 } else {
                     node.on("input", function(msg) {
-                        if (node.topic === "") {
+                        var topic = node.topic;
+                        if (topic === "") {
                             if (msg.topic) {
-                                node.topic = msg.topic;
+                                topic = msg.topic;
                             } else {
                                 node.warn("No topic set in MQ Light out node");
                                 return;
                             }
                         }
-                        sendClient.send(node.topic, msg.payload, function(err) {
+                        sendClient.send(topic, msg.payload, function(err) {
                             if (err) {
                                 node.error(err);
                             }
