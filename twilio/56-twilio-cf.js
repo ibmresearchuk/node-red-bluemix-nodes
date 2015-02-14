@@ -53,21 +53,15 @@ module.exports = function(RED) {
     });
     
     RED.httpAdmin.post('/twilio-api/:id',function(req,res) {
-        var body = "";
-        req.on('data', function(chunk) {
-            body+=chunk;
-        });
-        req.on('end', function(){
-            var newCreds = querystring.parse(body);
-            var credentials = RED.nodes.getCredentials(req.params.id)||{};
-            if (newCreds.token == "") {
-                delete credentials.token;
-            } else {
-                credentials.token = newCreds.token;
-            }
-            RED.nodes.addCredentials(req.params.id,credentials);
-            res.send(200);
-        });
+        var newCreds = req.body;
+        var credentials = RED.nodes.getCredentials(req.params.id)||{};
+        if (newCreds.token == "") {
+            delete credentials.token;
+        } else {
+            credentials.token = newCreds.token;
+        }
+        RED.nodes.addCredentials(req.params.id,credentials);
+        res.send(200);
     });
     
     function TwilioAPINode(n) {

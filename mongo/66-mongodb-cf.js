@@ -63,8 +63,6 @@ module.exports = function(RED) {
 
     RED.nodes.registerType("mongodb",MongoNode);
 
-    var querystring = require('querystring');
-
     RED.httpAdmin.get('/mongodb/vcap', function(req,res) {
         res.send(JSON.stringify(services));
     });
@@ -85,26 +83,20 @@ module.exports = function(RED) {
     });
 
     RED.httpAdmin.post('/mongodb/:id',function(req,res) {
-        var body = "";
-        req.on('data', function(chunk) {
-            body+=chunk;
-        });
-        req.on('end', function(){
-            var newCreds = querystring.parse(body);
-            var credentials = RED.nodes.getCredentials(req.params.id)||{};
-            if (newCreds.user == null || newCreds.user == "") {
-                delete credentials.user;
-            } else {
-                credentials.user = newCreds.user;
-            }
-            if (newCreds.password == "") {
-                delete credentials.password;
-            } else {
-                credentials.password = newCreds.password||credentials.password;
-            }
-            RED.nodes.addCredentials(req.params.id,credentials);
-            res.send(200);
-        });
+        var newCreds = req.body;
+        var credentials = RED.nodes.getCredentials(req.params.id)||{};
+        if (newCreds.user == null || newCreds.user == "") {
+            delete credentials.user;
+        } else {
+            credentials.user = newCreds.user;
+        }
+        if (newCreds.password == "") {
+            delete credentials.password;
+        } else {
+            credentials.password = newCreds.password||credentials.password;
+        }
+        RED.nodes.addCredentials(req.params.id,credentials);
+        res.send(200);
     });
 
 
