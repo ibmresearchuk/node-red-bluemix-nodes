@@ -1,0 +1,66 @@
+<!--
+  Copyright 2015 IBM Corp.
+
+  Licensed under the Apache License, Version 2.0 (the "License");
+  you may not use this file except in compliance with the License.
+  You may obtain a copy of the License at
+
+  http://www.apache.org/licenses/LICENSE-2.0
+
+  Unless required by applicable law or agreed to in writing, software
+  distributed under the License is distributed on an "AS IS" BASIS,
+  WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+  See the License for the specific language governing permissions and
+  limitations under the License.
+-->
+
+<script type="text/x-red" data-template-name="watson-speech-to-text">
+    <div class="form-row">
+        <label for="node-input-name"><i class="fa fa-tag"></i> Name</label>
+        <input type="text" id="node-input-name" placeholder="Name">
+    </div>
+    <div class="form-tips" id="node-missing-service-warning" style="display: none"><i class="fa fa-warning"></i><b> Warning:</b> There is no Speech To Text service connected
+    </div>
+</script>
+
+<script type="text/x-red" data-help-name="watson-speech-to-text">
+    <p>The Speech To Text converts the human voice into the written word. This service uses machine intelligence to combine information about grammar and language structure with knowledge of the composition of the audio signal to generate a more accurate transcription</p>
+    <p>The audio file to be analysed should be passed in on <b>msg.payload</b>.</p>
+    <p>Supported msg.payload types:</b>.</p>
+    <ul>
+        <li><b>String</b> URL to audio</li>
+        <li><b>Buffer</b> Raw Audio Bytes</li>
+    </ul>
+    <p>Audio must be a <b>WAV file (44.1kHz)</b>.</p>
+    <p>The returned audio transcription will be returned on <b>msg.transcription</b>.</p>
+    <p>For more information about the Speech To Text service, read the <a href="https://www.ibm.com/smarterplanet/us/en/ibmwatson/developercloud/speech-to-text.html">documentation</a>.</p>
+</script>
+
+<script type="text/javascript">
+    (function() {
+        RED.nodes.registerType('watson-speech-to-text', {
+            category: 'IBM Watson',
+            defaults: {
+                name: {value: ""}
+            },
+            color: "rgb(140, 198, 63)",
+            inputs: 1,
+            outputs: 1,
+            icon: "speech_to_text.png",
+            paletteLabel: "speech to text",
+            label: function() {
+                return this.name || "speech to text";
+            },
+            labelStyle: function() {
+                return this.name ? "node_label_italic" : "";
+            },
+            oneditprepare: function() {
+                $.getJSON('watson-speech-to-text/vcap/', function(service) {
+                    if (!service) {
+                        $("#node-missing-service-warning").show();
+                    }
+                });
+            }
+        });
+    })();
+</script>

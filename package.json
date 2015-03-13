@@ -1,23 +1,36 @@
 {
-    "name" : "node-red-bluemix-nodes",
-    "version" : "0.2.4",
-    "description" : "A collection of extra Node-RED nodes for IBM Bluemix.",
-    "dependencies" : {
-        "when": "~3.x",
+    "name": "node-red-bluemix-nodes",
+    "version": "0.2.4",
+    "description": "A collection of extra Node-RED nodes for IBM Bluemix.",
+    "dependencies": {
+        "cfenv": "~1.0.0",
         "mongodb": "~1.4.x",
-        "mqlight" : ">=1.0.2014091000",
-        "cfenv":"~1.0.0",
-        "twilio":"~1.6.0",
-        "request":"~2.40.0"
+        "mqlight": ">=1.0.2014091000",
+        "request": "~2.53.0",
+        "stream-to-array": "^2.0.2",
+        "twilio": "~1.6.0",
+        "watson-developer-cloud": "^0.9.4",
+        "when": "~3.x",
+        "xml2js": "^0.4.6"
     },
-    "repository" : {
-        "type":"git",
-        "url":"https://github.com/node-red/node-red-bluemix-nodes"
+    "repository": {
+        "type": "git",
+        "url": "https://github.com/node-red/node-red-bluemix-nodes"
     },
     "license": "Apache-v2.0",
-    "keywords": [ "node-red", "bluemix", "io", "tcp", "udp", "mongodb", "twilio","mqlight","watson" ],
-    "node-red" : {
-        "nodes" : {
+    "keywords": [
+        "node-red",
+        "bluemix",
+        "io",
+        "tcp",
+        "udp",
+        "mongodb",
+        "twilio",
+        "mqlight",
+        "watson"
+    ],
+    "node-red": {
+        "nodes": {
             "tcp": "io/31-tcpin-cf.js",
             "udp": "io/32-udp-cf.js",
             "mqlight": "mqlight/mqlight.js",
@@ -25,8 +38,14 @@
             "twilio": "twilio/56-twilio-cf.js",
             "watson-question-answer": "watson/qa.js",
             "watson-language-identification": "watson/lid.js",
-            "watson-translate": "watson/smt.js"
-            
+            "watson-translate": "watson/smt.js",
+            "watson-message-resonance": "watson/mr.js",
+            "watson-personality-insights": "watson/pi.js",
+            "watson-relationship-extraction": "watson/re.js",
+            "watson-speech-to-text": "watson/s2t.js",
+            "watson-text-to-speech": "watson/t2s.js",
+            "watson-tradeoff-analytics": "watson/ta.js",
+            "watson-visual-recognition": "watson/vr.js"
         }
     }
 }
