@@ -1,0 +1,80 @@
+<!--
+  Copyright 2015 IBM Corp.
+
+  Licensed under the Apache License, Version 2.0 (the "License");
+  you may not use this file except in compliance with the License.
+  You may obtain a copy of the License at
+
+  http://www.apache.org/licenses/LICENSE-2.0
+
+  Unless required by applicable law or agreed to in writing, software
+  distributed under the License is distributed on an "AS IS" BASIS,
+  WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+  See the License for the specific language governing permissions and
+  limitations under the License.
+-->
+
+<script type="text/x-red" data-template-name="watson-message-resonance">
+    <div class="form-row">
+        <label for="node-input-name"><i class="fa fa-tag"></i> Name</label>
+        <input type="text" id="node-input-name" placeholder="Name">
+    </div>
+    <div class="form-row">
+        <label for="node-input-dataset"><i class="fa fa-comments-o"></i> Dataset</label>
+        <select type="text" id="node-input-dataset" style="display: inline-block; vertical-align:middle; width: 70%;">
+            <option value="">set dataset code in msg.dataset</option>
+        </select>
+    </div>
+    <div class="form-tips" id="node-missing-service-warning" style="display: none"><i class="fa fa-warning"></i><b> Warning:</b> There is no Message Resonance service connected
+    </div>
+</script>
+
+<script type="text/x-red" data-help-name="watson-message-resonance">
+    <p>The Message Resonance Service analyses text to rate the effective resonance of your content with the intended audience.</p>
+    <p>There are two different audience datasets to choose from.</p>
+    <ul>
+        <li><b>Cloud Computing</b></li>
+        <li><b>Big Data & Analytics</b></li>
+    </ul>
+    <p>The text to analyse should be passed in on <b>msg.payload</b>.</p>
+    <p>The resonance word scores will be returned on <b>msg.resonance</b>.</p>
+    <p>For more information about the Message Resonance service, read the <a href="https://www.ibm.com/smarterplanet/us/en/ibmwatson/developercloud/message-resonance.html">documentation</a>.</p>
+</script>
+
+<script type="text/javascript">
+    (function() {
+        RED.nodes.registerType('watson-message-resonance', {
+            category: 'IBM Watson',
+            defaults: {
+                name: {value: ""},
+                dataset: {value: ""}
+            },
+            color: "rgb(0, 213, 211)",
+            inputs: 1,
+            outputs: 1,
+            icon: "message_resonance.png",
+            paletteLabel: "message resonance",
+            label: function() {
+                return this.name || "message resonance";
+            },
+            labelStyle: function() {
+                return this.name ? "node_label_italic" : "";
+            },
+            oneditprepare: function() {
+                $.getJSON('watson-message-resonance/vcap/', function(datasets) {
+                    if (!datasets) {
+                        $("#node-missing-service-warning").show();
+                    } else {
+                        var select = $('#node-input-dataset');
+                        for (var i = 0; i < datasets.length; ++i) {
+                            var dataset = datasets[i].id;
+                            var option = "<option value=\"" + dataset + "\">"+ datasets[i].name + "</option>";
+                            select.append(option);
+                        }
+                        select.find("option").filter(function() {return $(this).val() === node.dataset;}).attr('selected', true);
+                    }
+                });
+            }
+        });
+    })();
+</script>

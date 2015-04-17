@@ -1,5 +1,5 @@
 <!--
-  Copyright 2013,2014 IBM Corp.
+  Copyright 2013,2015 IBM Corp.
 
   Licensed under the Apache License, Version 2.0 (the "License");
   you may not use this file except in compliance with the License.
@@ -44,12 +44,10 @@
 
         function oneditprepare() {
             var node = this;
-            $.getJSON('watson-translate/vcap/', function(services) {
-                if (services.length == 0) {
+            $.getJSON('watson-translate/vcap/', function(sids) {
+                if (sids.length == 0) {
                     $("#node-missing-service-warning").show();
                 } else {
-                    // Assume service[0]
-                    var sids = services[0];
                     var select = $('#node-input-language');
                     for (var i = 0; i < sids.length; ++i) {
                         var sid = sids[i].sid;
@@ -67,7 +65,7 @@
                 name: {value: ""},
                 language: {value: ""}
             },
-            color: "rgb(183, 226, 126)",
+            color: "rgb(140, 198, 63)",
             inputs: 1,
             outputs: 1,
             icon: "translation.png",

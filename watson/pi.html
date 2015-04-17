@@ -1,5 +1,5 @@
 <!--
-  Copyright 2013,2015 IBM Corp.
+  Copyright 2015 IBM Corp.
 
   Licensed under the Apache License, Version 2.0 (the "License");
   you may not use this file except in compliance with the License.
@@ -14,25 +14,25 @@
   limitations under the License.
 -->
 
-<script type="text/x-red" data-template-name="watson-language-identification">
+<script type="text/x-red" data-template-name="watson-personality-insights">
     <div class="form-row">
         <label for="node-input-name"><i class="fa fa-tag"></i> Name</label>
         <input type="text" id="node-input-name" placeholder="Name">
     </div>
-    <div class="form-tips" id="node-missing-service-warning" style="display: none"><i class="fa fa-warning"></i><b> Warning:</b> There is no Language Identification service connected
+    <div class="form-tips" id="node-missing-service-warning" style="display: none"><i class="fa fa-warning"></i><b> Warning:</b> There is no Personality Insights service connected
     </div>
 </script>
 
-<script type="text/x-red" data-help-name="watson-language-identification">
-    <p>The Language Identification service analyzes UTF-8 encoded text, detects the language used in that text, and displays the associated 5-letter ISO language code. </p>
-    <p>The text to detect should be passed in on <b>msg.payload</b>.</p>
-    <p>The ISO language code will be returned on <b>msg.lang</b>.</p>
-    <p>For more information about the Language Identification service, read the <a href="https://www.ibm.com/smarterplanet/us/en/ibmwatson/developercloud/language-identification.html">documentation</a>.</p>
+<script type="text/x-red" data-help-name="watson-personality-insights">
+    <p>The Personality Insights service uses linguistic analytics to infer personality and social characteristics, including Big Five, Needs, and Values, from text.</p>
+    <p>The text (minimum of a hundred words) to analyse should be passed in on <b>msg.payload</b>.</p>
+    <p>The insights will be returned as a tree on <b>msg.insights</b>.</p>
+    <p>For more information about the Personality Insights service, read the <a href="https://www.ibm.com/smarterplanet/us/en/ibmwatson/developercloud/personality-insights.html">documentation</a>.</p>
 </script>
 
 <script type="text/javascript">
     (function() {
-        RED.nodes.registerType('watson-language-identification', {
+        RED.nodes.registerType('watson-personality-insights', {
             category: 'IBM Watson',
             defaults: {
                 name: {value: ""}
@@ -40,16 +40,16 @@
             color: "rgb(140, 198, 63)",
             inputs: 1,
             outputs: 1,
-            icon: "languageid.png",
-            paletteLabel: "language identification",
+            icon: "personality_insights.png",
+            paletteLabel: "personality insights",
             label: function() {
-                return this.name || "language identification";
+                return this.name || "personality insights";
             },
             labelStyle: function() {
                 return this.name ? "node_label_italic" : "";
             },
             oneditprepare: function() {
-                $.getJSON('watson-language-identification/vcap/', function(service) {
+                $.getJSON('watson-personality-insights/vcap/', function(service) {
                     if (!service) {
                         $("#node-missing-service-warning").show();
                     }

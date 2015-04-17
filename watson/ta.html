@@ -1,0 +1,62 @@
+<!--
+  Copyright 2015 IBM Corp.
+
+  Licensed under the Apache License, Version 2.0 (the "License");
+  you may not use this file except in compliance with the License.
+  You may obtain a copy of the License at
+
+  http://www.apache.org/licenses/LICENSE-2.0
+
+  Unless required by applicable law or agreed to in writing, software
+  distributed under the License is distributed on an "AS IS" BASIS,
+  WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+  See the License for the specific language governing permissions and
+  limitations under the License.
+-->
+
+<script type="text/x-red" data-template-name="watson-tradeoff-analytics">
+    <div class="form-row">
+        <label for="node-input-name"><i class="fa fa-tag"></i> Name</label>
+        <input type="text" id="node-input-name" placeholder="Name">
+    </div>
+    <div class="form-tips" id="node-missing-service-warning" style="display: none"><i class="fa fa-warning"></i><b> Warning:</b> There is no Tradeoff Analytics service connected
+    </div>
+</script>
+
+<script type="text/x-red" data-help-name="watson-tradeoff-analytics">
+    <p>The Tradeoff Analytics helps people make better choices when faced with multiple, often conflicting goals and alternatives. Mathematical filtering techniques to identify the top options based on multiple criteria, helps users explore the tradeoffs between options when making complex decisions.</p>
+    <p>The decision subject to analyse should be passed in on <b>msg.payload</b>.</p>
+    <p>The criteria columns should be passed in on <b>msg.columns</b>.</p>
+    <p>The decision options should be passed in on <b>msg.options</b>.</p>
+    <p>The resolution results will be returned on <b>msg.resolution</b>.</p>
+    <p>For more information about the Tradeoff Analytics service, read the <a href="https://www.ibm.com/smarterplanet/us/en/ibmwatson/developercloud/tradeoff-analytics.html">documentation</a>.</p>
+</script>
+
+<script type="text/javascript">
+    (function() {
+        RED.nodes.registerType('watson-tradeoff-analytics', {
+            category: 'IBM Watson',
+            defaults: {
+                name: {value: ""}
+            },
+            color: "rgb(32, 178, 239)",
+            inputs: 1,
+            outputs: 1,
+            icon: "tradeoff_analytics.png",
+            paletteLabel: "tradeoff analytics",
+            label: function() {
+                return this.name || "tradeoff analytics";
+            },
+            labelStyle: function() {
+                return this.name ? "node_label_italic" : "";
+            },
+            oneditprepare: function() {
+                $.getJSON('watson-tradeoff-analytics/vcap/', function(service) {
+                    if (!service) {
+                        $("#node-missing-service-warning").show();
+                    }
+                });
+            }
+        });
+    })();
+</script>

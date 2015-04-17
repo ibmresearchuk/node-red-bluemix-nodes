@@ -1,5 +1,5 @@
 <!--
-  Copyright 2013,2014 IBM Corp.
+  Copyright 2013,2015 IBM Corp.
 
   Licensed under the Apache License, Version 2.0 (the "License");
   you may not use this file except in compliance with the License.
@@ -60,7 +60,7 @@
                 output: {value: "top"},
                 corpus: {value: "healthcare"}
             },
-            color: "#9CDCF1",
+            color: "rgb(32, 178, 239)",
             inputs: 1,
             outputs: 1,
             icon: "question.png",
@@ -72,8 +72,8 @@
                 return this.name ? "node_label_italic" : "";
             },
             oneditprepare: function() {
-                $.getJSON('watson-question-answer/vcap/', function(services) {
-                    if (services.length === 0) {
+                $.getJSON('watson-question-answer/vcap/', function(service) {
+                    if (!service) {
                         $("#node-missing-service-warning").show();
                     }
                 });

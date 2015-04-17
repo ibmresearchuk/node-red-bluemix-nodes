@@ -1,0 +1,77 @@
+<!--
+  Copyright 2015 IBM Corp.
+
+  Licensed under the Apache License, Version 2.0 (the "License");
+  you may not use this file except in compliance with the License.
+  You may obtain a copy of the License at
+
+  http://www.apache.org/licenses/LICENSE-2.0
+
+  Unless required by applicable law or agreed to in writing, software
+  distributed under the License is distributed on an "AS IS" BASIS,
+  WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+  See the License for the specific language governing permissions and
+  limitations under the License.
+-->
+
+<script type="text/x-red" data-template-name="watson-text-to-speech">
+    <div class="form-row">
+        <label for="node-input-name"><i class="fa fa-tag"></i> Name</label>
+        <input type="text" id="node-input-name" placeholder="Name">
+    </div>
+    <div class="form-row">
+        <label for="node-input-voice"><i class="fa fa-book"></i> Voice</label>
+        <select type="text" id="node-input-voice" style="display: inline-block; width: 70%;">
+            <option value="VoiceEnUsMichael">Michael</option>
+            <option value="VoiceEnUsLisa">Lisa</option>
+            <option value="VoiceEsEsEnrique">Enrique</option>
+            <option value="VoiceEnUsAllison">Allison</option>
+        </select>
+    </div>
+    <div class="form-tips" id="node-missing-service-warning" style="display: none"><i class="fa fa-warning"></i><b> Warning:</b> There is no Text To Speech service connected
+    </div>
+</script>
+
+<script type="text/x-red" data-help-name="watson-text-to-speech">
+    <p>The Text To Speech service understands text and natural language to generate synthesized audio output complete with appropriate cadence and intonation.</p>
+    <p>Supported audio voices include:</b>.</p>
+    <ul>
+        <li><b>Michael</b> US Male.</li>
+        <li><b>Lisa</b> US Female.</li>
+        <li><b>Enrique</b> Spanish Male.</li>
+        <li><b>Allison</b> US Female.</li>
+    </ul>
+    <p>The text to be converted should be passed in on <b>msg.payload</b>.</p>
+    <p>The returned audio transcription will be returned as a raw buffer containing the audio on <b>msg.transcription</b>.</p>
+    <p>For more information about the Text To Speech service, read the <a href="https://www.ibm.com/smarterplanet/us/en/ibmwatson/developercloud/text-to-speech.html">documentation</a>.</p>
+</script>
+
+<script type="text/javascript">
+    (function() {
+        RED.nodes.registerType('watson-text-to-speech', {
+            category: 'IBM Watson',
+            defaults: {
+                name: {value: ""},
+                voice: {value: "VoiceEnUsMichael"}
+            },
+            color: "rgb(140, 198, 63)",
+            inputs: 1,
+            outputs: 1,
+            icon: "text_to_speech.png",
+            paletteLabel: "text to speech",
+            label: function() {
+                return this.name || "text to speech";
+            },
+            labelStyle: function() {
+                return this.name ? "node_label_italic" : "";
+            },
+            oneditprepare: function() {
+                $.getJSON('watson-text-to-speech/vcap/', function(service) {
+                    if (!service) {
+                        $("#node-missing-service-warning").show();
+                    }
+                });
+            }
+        });
+    })();
+</script>

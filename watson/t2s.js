@@ -1,5 +1,5 @@
 /**
- * Copyright 2013,2015 IBM Corp.
+ * Copyright 2015 IBM Corp.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -14,54 +14,61 @@
  * limitations under the License.
  **/
 
-module.exports = function (RED) {
+module.exports = function(RED) {
   var cfenv = require('cfenv');
 
-  var services = cfenv.getAppEnv().services,
+  var services = cfenv.getAppEnv().services, 
     service;
 
-  if (services.language_identification) service = services.language_identification[0];
+  if (services.text_to_speech) service = services.text_to_speech[0];
 
-  RED.httpAdmin.get('/watson-language-identification/vcap', function (req, res) {
+  RED.httpAdmin.get('/watson-text-to-speech/vcap', function(req, res) {
     res.json(service);
   });
 
-  function Node (config) {
+  function Node(config) {
     RED.nodes.createNode(this, config);
     var node = this;
 
     if (!service) {
-      node.error('No language identification service bound');
+      node.error("No text to speech service bound");
     } else {
       var cred = service.credentials;
       var username = cred.username;
       var password = cred.password;
 
-      this.on('input', function (msg) {
+      var toArray = require('stream-to-array')
+
+      this.on('input', function(msg) {
         if (!msg.payload) {
           node.error('Missing property: msg.payload');
           return;
         }
-
         var watson = require('watson-developer-cloud');
 
-        var language_identification = watson.language_identification({
+        var text_to_speech = watson.text_to_speech({
           username: username,
           password: password,
           version: 'v1'
         });
 
-        language_identification.identify({text: msg.payload}, function (err, response) {
-          if (err) {
-            node.error(err);
-          } else {
-            msg.lang = response.language;
-          }
+        var params = {
+          text: msg.payload,
+          voice: config.voice,
+          accept: 'audio/wav'
+        };
 
+        toArray(text_to_speech.synthesize(params), function (err, arr) {
+          if (err) {
+            console.log(err);
+          } else {
+            msg.speech = Buffer.concat(arr);
+          }
           node.send(msg);
-        });
+        })
+
       });
     }
   }
-  RED.nodes.registerType('watson-language-identification',Node);
+  RED.nodes.registerType("watson-text-to-speech", Node);
 };

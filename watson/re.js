@@ -1,5 +1,5 @@
 /**
- * Copyright 2013,2015 IBM Corp.
+ * Copyright 2015 IBM Corp.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -20,24 +20,34 @@ module.exports = function (RED) {
   var services = cfenv.getAppEnv().services,
     service;
 
-  if (services.language_identification) service = services.language_identification[0];
+  if (services.relationship_extraction) service = services.relationship_extraction[0];
 
-  RED.httpAdmin.get('/watson-language-identification/vcap', function (req, res) {
-    res.json(service);
+  RED.httpAdmin.get('/watson-relationship-extraction/vcap', function (req, res) {
+    if (service) {
+      res.json(service.credentials.sids);
+      return;
+    } 
+    res.json(null);
   });
 
-  function Node (config) {
-    RED.nodes.createNode(this, config);
+  function Node(config) {
+    RED.nodes.createNode(this,config);
     var node = this;
 
     if (!service) {
-      node.error('No language identification service bound');
+      node.error("No relationship extraction service bound");
     } else {
       var cred = service.credentials;
       var username = cred.username;
       var password = cred.password;
 
       this.on('input', function (msg) {
+        msg.dataset = config.dataset;
+
+        if (msg.dataset == "") {                    
+          node.warn("Dataset passed in on msg.dataset is invalid: message not analysed.");
+          return;
+        }
         if (!msg.payload) {
           node.error('Missing property: msg.payload');
           return;
@@ -45,23 +55,27 @@ module.exports = function (RED) {
 
         var watson = require('watson-developer-cloud');
 
-        var language_identification = watson.language_identification({
+        var relationship_extraction = watson.relationship_extraction({
           username: username,
           password: password,
           version: 'v1'
         });
 
-        language_identification.identify({text: msg.payload}, function (err, response) {
+        relationship_extraction.extract({text: msg.payload, dataset: msg.dataset }, function (err, response) {
           if (err) {
             node.error(err);
-          } else {
-            msg.lang = response.language;
+            node.send(msg);
+            return;
           }
 
-          node.send(msg);
+          var parseString = require('xml2js').parseString;                    
+          parseString(response, function (err, result) {                        
+            msg.relationships = result;    
+            node.send(msg);
+          });
         });
       });
     }
   }
-  RED.nodes.registerType('watson-language-identification',Node);
+  RED.nodes.registerType("watson-relationship-extraction",Node);
 };
