@@ -74,6 +74,11 @@ module.exports = function(RED) {
                         }
                         node.send(msg);
                     });
+                    recvClient.on("error", function(err) {
+                        if (err) {
+                            node.error(err.toString());
+                        }
+                    });
                     node.log("Subscribing to "+node.topic+(node.share?+" ["+node.share+"]":""));
                     var subscribeCallback = function(err) {
                         if (err) {
@@ -133,12 +138,19 @@ module.exports = function(RED) {
                         }
                         sendClient.send(topic, msg.payload, function(err) {
                             if (err) {
-                                node.error(err);
+                                node.error(err, msg);
                             }
                         });
                     });
                 }
             });
+            
+            sendClient.on("error", function(err) {
+                if (err) {
+                    node.error(err.toString());
+                }
+            });
+            
             node.on("close", function (done) {
                 sendClient.stop(done);
             });
