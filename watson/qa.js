@@ -20,7 +20,7 @@ module.exports = function (RED) {
   var services = cfenv.getAppEnv().services,
     service;
 
-  if (services.question_and_answer) service = services.question_and_answer[0];
+  if (services.question_and_answer) { service = services.question_and_answer[0]; }
 
   RED.httpAdmin.get('/watson-question-answer/vcap', function (req, res) {
     res.json(service);
@@ -53,40 +53,41 @@ module.exports = function (RED) {
         });
 
         question_and_answer_healthcare.ask({ text: msg.payload }, function (err, response) {
-          if (err) node.error('API responses with error: ' + err);
+          if (err) { node.error('API responses with error: ' + err,msg); }
+          else {
+              var answers = response[0].question.answers;
+              var evidenceList = response[0].question.evidencelist;
+              if (answers) {
+                if (output === 'top') {
+                  if (answers[0].pipeline.indexOf('TAO') > -1) {
+                    msg.payload = evidenceList[0].text;
+                  } else {
+                    msg.payload = answers[0].text;
+                  }
+                  msg.confidence = answers[0].confidence;
+                } else if (output === 'all') {
+                  var all = [];
 
-          var answers = response[0].question.answers;
-          var evidenceList = response[0].question.evidencelist;
-          if (!err && answers) {
-            if (output === 'top') {
-              if (answers[0].pipeline.indexOf('TAO') > -1) {
-                msg.payload = evidenceList[0].text;
-              } else {
-                msg.payload = answers[0].text;
-              }
-              msg.confidence = answers[0].confidence;
-            } else if (output === 'all') {
-              var all = [];
-
-              for (var i = 0; i < answers.length; ++i) {
-                var answerText;
-                if (answers[i].pipeline.indexOf('TAO') > -1) {
-                  answerText = evidenceList[i].text;
-                } else {
-                  answerText = answers[i].text;
+                  for (var i = 0; i < answers.length; ++i) {
+                    var answerText;
+                    if (answers[i].pipeline.indexOf('TAO') > -1) {
+                      answerText = evidenceList[i].text;
+                    } else {
+                      answerText = answers[i].text;
+                    }
+                    var ans = {
+                      payload: answerText,
+                      confidence: answers[i].confidence
+                    };
+                    all.push(ans);
+                  }
+                  msg.payload = all;
                 }
-                var ans = {
-                  payload: answerText,
-                  confidence: answers[i].confidence
-                };
-                all.push(ans);
+              } else {
+                msg.payload = '';
               }
-              msg.payload = all;
-            }
-          } else {
-            msg.payload = '';
+              node.send(msg);
           }
-          node.send(msg);
         });
       });
     }
