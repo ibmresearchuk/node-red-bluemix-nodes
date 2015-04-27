@@ -21,13 +21,13 @@ The current release contains the following nodes:
 - Twilio
     - Sends an SMS message using the Twilio service
 
-#### Watson nodes:
+### Watson nodes:
 
 - Language Identification
     - Detects the language used in text
-- Message Resonance 
+- Message Resonance
     - Analyzes content and scores how well it is likely to be received by a target audience
-- Personality Insights 
+- Personality Insights
     - Use linguistic analytics to infer cognitive and social characteristics from text
 - Machine Translation
     - Translates text from one language to another
@@ -40,6 +40,17 @@ The current release contains the following nodes:
 - Text To Speech
     - Convert text to audio speech
 - Tradeoff Analytics
-    - Optimize decisions balance between multiple conflicting objectives. 
+    - Optimize decisions balance between multiple conflicting objectives.
 - Visual Recognition
     - Analyze visual appearance of images to understand their contents
+
+### Contributing
+
+For simple typos and single line fixes please just raise an issue pointing out
+our mistakes. If you need to raise a pull request please read our
+[contribution guidelines](https://github.com/node-red/node-red/blob/master/CONTRIBUTING.md)
+before doing so.
+
+### Copyright and license
+
+Copyright 2014, 2015 IBM Corp. under [the Apache 2.0 license](LICENSE).
