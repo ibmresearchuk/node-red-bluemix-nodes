@@ -18,16 +18,16 @@ module.exports = function(RED) {
   var watson = require('watson-developer-cloud');
   var cfenv = require('cfenv');
 
-  var services = cfenv.getAppEnv().services, 
+  var services = cfenv.getAppEnv().services,
     service;
 
-  if (services.machine_translation) service = services.machine_translation[0];
+  if (services.machine_translation) { service = services.machine_translation[0]; }
 
   RED.httpAdmin.get('/watson-translate/vcap', function(req, res) {
     if (service) {
       res.json(service.credentials.sids);
       return;
-    } 
+    }
     res.json(null);
   });
 
@@ -78,10 +78,8 @@ module.exports = function(RED) {
         machine_translation.translate({
           text: msg.payload, from : langs[1], to: langs[2] },
           function (err, response) {
-            if (err)
-              node.error(err);
-            else 
-              msg.payload = response.translation || "";
+            if (err) { node.error(err); }
+            else { msg.payload = response.translation || ""; }
             node.send(msg);
           });
 
