@@ -16,17 +16,17 @@
 
 module.exports = function(RED) {
 "use strict";
-    
+
     var cfenv = require("cfenv");
     var appEnv = cfenv.getAppEnv();
 
     var services = appEnv.services.mqlight || [];
     var serviceList = services.map(function(s) { return s.name; });
-    
+
     RED.httpAdmin.get('/mqlight/vcap', function(req, res) {
         res.json(serviceList);
     });
-    
+
     var mqlight = require('mqlight');
 
     function MQLightIn(n) {
@@ -44,7 +44,7 @@ module.exports = function(RED) {
                 node.warn("No topic set in MQ Light in node");
                 return;
             }
-            
+
             var serv = services.filter(function(s) {
                 return s.name === node.service;
             })[0];
@@ -79,20 +79,20 @@ module.exports = function(RED) {
                             node.error(err.toString());
                         }
                     });
-                    node.log("Subscribing to "+node.topic+(node.share?+" ["+node.share+"]":""));
+                    node.log("Subscribing to "+node.topic+(node.share ? " ["+node.share+"]" : ""));
                     var subscribeCallback = function(err) {
                         if (err) {
                             node.error("Failed to subscribe: " + err);
                         } else {
-                            node.log("Subscribed to "+node.topic+(node.share?+" ["+node.share+"]":""));
+                            node.log("Subscribed to "+node.topic+(node.share ? " ["+node.share+"]" : ""));
                         }
                     };
-                    
+
                     if (node.share) {
                         recvClient.subscribe(node.topic, node.share,subscribeCallback);
                     } else {
                         recvClient.subscribe(node.topic,subscribeCallback);
-                    }                        
+                    }
                 }
             });
             node.on("close", function (done) {
@@ -144,13 +144,13 @@ module.exports = function(RED) {
                     });
                 }
             });
-            
+
             sendClient.on("error", function(err) {
                 if (err) {
                     node.error(err.toString());
                 }
             });
-            
+
             node.on("close", function (done) {
                 sendClient.stop(done);
             });
