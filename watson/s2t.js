@@ -62,7 +62,10 @@ module.exports = function (RED) {
             if (err) {
               console.log(err);
             } else {
-              msg.transcription = res.results[0].alternatives[0].transcript;
+              msg.transcription = '';
+              if (res.results.length && res.results[0].alternatives.length) {
+                msg.transcription = res.results[0].alternatives[0].transcript;
+              }
             }
 
             node.send(msg);
