@@ -9,6 +9,7 @@
         "request": "~2.53.0",
         "stream-to-array": "^2.0.2",
         "streamifier": "^0.1.1",
+        "temp": "^0.8.3",
         "twilio": "~1.6.0",
         "watson-developer-cloud": "^0.9.4",
         "when": "~3.x",
