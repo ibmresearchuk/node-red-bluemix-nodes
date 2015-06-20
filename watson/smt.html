@@ -19,6 +19,14 @@
         <label for="node-input-name"><i class="fa fa-tag"></i> Name</label>
         <input type="text" id="node-input-name" placeholder="Name">
     </div>
+    <div class="form-row credentials">
+        <label for="node-input-username"><i class="fa fa-user"></i> Username</label>
+        <input type="text" id="node-input-username" placeholder="Username">
+    </div>
+    <div class="form-row credentials">
+        <label for="node-input-password"><i class="fa fa-key"></i> Password</label>
+        <input type="text" id="node-input-password" placeholder="Password">
+    </div>
     <div class="form-row">
         <label for="node-input-language"><i class="fa fa-comments-o"></i> Language</label>
         <select type="text" id="node-input-language" style="display: inline-block; vertical-align:middle; width: 70%;">
@@ -44,25 +52,32 @@
 
         function oneditprepare() {
             var node = this;
-            $.getJSON('watson-translate/vcap/', function(sids) {
+            $.getJSON('watson-translate/vcap/')
+              .done(function (sids) {
+                $('.credentials').toggle(!sids);
                 if (sids.length === 0) {
-                    $("#node-missing-service-warning").show();
+                  $("#node-missing-service-warning").show();
                 } else {
-                    var select = $('#node-input-language');
-                    for (var i = 0; i < sids.length; ++i) {
-                        var sid = sids[i].sid;
-                        var option = "<option value=\"" + sid + "\">"+ sids[i].description + "</option>";
-                        select.append(option);
-                    }
-                    select.find("option").filter(function() {return $(this).val() === node.language;}).attr('selected', true);
+                  var select = $('#node-input-language');
+                  for (var i = 0; i < sids.length; ++i) {
+                    var sid = sids[i].sid;
+                    var option = "<option value=\"" + sid + "\">"+ sids[i].description + "</option>";
+                    select.append(option);
+                  }
+                  select.find("option").filter(function() {return $(this).val() === node.language;}).attr('selected', true);
                 }
-            });
+              })
+              .fail(function () {
+                $('.credentials').show();
+              })
         }
 
         RED.nodes.registerType('watson-translate',{
             category: 'IBM Watson',
             defaults: {
                 name: {value: ""},
+                username: {value: ""},
+                password: {value: ""},
                 language: {value: ""}
             },
             color: "rgb(140, 198, 63)",

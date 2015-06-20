@@ -20,7 +20,14 @@ module.exports = function(RED) {
   var services = cfenv.getAppEnv().services,
     service;
 
-  if (services.tradeoff_analytics) service = services.tradeoff_analytics[0];
+  var username, password;
+
+  var service = cfenv.getAppEnv().getServiceCreds(/tradeoff analytics/i)
+
+  if (service) {
+    username = service.username;
+    password = service.password;
+  }
 
   RED.httpAdmin.get('/watson-tradeoff-analytics/vcap', function(req, res) {
     res.json(service);
@@ -30,16 +37,17 @@ module.exports = function(RED) {
     RED.nodes.createNode(this,config);
     var node = this;
 
-    if (!service) {
-      node.error("No tradeoff analytics service bound");
-    } else {
-      var cred = service.credentials;
-      var username = cred.username;
-      var password = cred.password;
-
       this.on('input', function(msg) {
         if (!msg.payload) {
           node.error('Missing property: msg.payload');
+          return;
+        }
+
+        username = username || config.username;
+        password = password || config.password;
+
+        if (!username || !password) {
+          node.error('Missing Tradeoff Analytics service credentials');
           return;
         }
 
@@ -65,7 +73,6 @@ module.exports = function(RED) {
           node.send(msg);
         });
       });
-    }
   }
   RED.nodes.registerType("watson-tradeoff-analytics",Node);
 };

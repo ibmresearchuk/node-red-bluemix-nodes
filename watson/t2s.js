@@ -20,7 +20,14 @@ module.exports = function(RED) {
   var services = cfenv.getAppEnv().services, 
     service;
 
-  if (services.text_to_speech) service = services.text_to_speech[0];
+  var username, password;
+
+  var service = cfenv.getAppEnv().getServiceCreds(/text to speech/i)
+
+  if (service) {
+    username = service.username;
+    password = service.password;
+  }
 
   RED.httpAdmin.get('/watson-text-to-speech/vcap', function(req, res) {
     res.json(service);
@@ -30,45 +37,46 @@ module.exports = function(RED) {
     RED.nodes.createNode(this, config);
     var node = this;
 
-    if (!service) {
-      node.error("No text to speech service bound");
-    } else {
-      var cred = service.credentials;
-      var username = cred.username;
-      var password = cred.password;
+    var toArray = require('stream-to-array')
 
-      var toArray = require('stream-to-array')
+    this.on('input', function(msg) {
+      if (!msg.payload) {
+        node.error('Missing property: msg.payload');
+        return;
+      }
 
-      this.on('input', function(msg) {
-        if (!msg.payload) {
-          node.error('Missing property: msg.payload');
-          return;
-        }
-        var watson = require('watson-developer-cloud');
+      username = username || config.username;
+      password = password || config.password;
 
-        var text_to_speech = watson.text_to_speech({
-          username: username,
-          password: password,
-          version: 'v1'
-        });
+      if (!username || !password) {
+        node.error('Missing Speech To Text service credentials');
+        return;
+      }
+ 
+      var watson = require('watson-developer-cloud');
 
-        var params = {
-          text: msg.payload,
-          voice: config.voice,
-          accept: 'audio/wav'
-        };
-
-        toArray(text_to_speech.synthesize(params), function (err, arr) {
-          if (err) {
-            console.log(err);
-          } else {
-            msg.speech = Buffer.concat(arr);
-          }
-          node.send(msg);
-        })
-
+      var text_to_speech = watson.text_to_speech({
+        username: username,
+        password: password,
+        version: 'v1'
       });
-    }
+
+      var params = {
+        text: msg.payload,
+        voice: config.voice,
+        accept: 'audio/wav'
+      };
+
+      toArray(text_to_speech.synthesize(params), function (err, arr) {
+        if (err) {
+          console.log(err);
+        } else {
+          msg.speech = Buffer.concat(arr);
+        }
+        node.send(msg);
+      })
+
+    });
   }
   RED.nodes.registerType("watson-text-to-speech", Node);
 };

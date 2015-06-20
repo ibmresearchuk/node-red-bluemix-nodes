@@ -21,70 +21,75 @@ module.exports = function(RED) {
   var services = cfenv.getAppEnv().services,
     service;
 
-  if (services.machine_translation) { service = services.machine_translation[0]; }
+  var username, password;
 
+  var service = cfenv.getAppEnv().getServiceCreds(/language translation/i)
+
+  if (service) {
+    username = service.username;
+    password = service.password;
+  }
+ 
   RED.httpAdmin.get('/watson-translate/vcap', function(req, res) {
-    if (service) {
-      res.json(service.credentials.sids);
-      return;
-    }
-    res.json(null);
+    res.json(service ? service.credentials.sids : null);
   });
 
   function SMTNode(config) {
     RED.nodes.createNode(this, config);
     var node = this;
 
-    if (!service) {
-      node.error("No machine translation service bound");
-    } else {
-      var cred = service.credentials;
-      var username = cred.username;
-      var password = cred.password;
-      var sids = cred.sids;
+    // TODO: What if user inputs creds manually?
+    var sids = service.sids;
 
-      this.on('input', function(msg) {
-        if (!msg.payload) {
-          node.error('Missing property: msg.payload');
-          return;
-        }
-        var sid = config.language;
-        if (config.language === "") {
-          var exists = false;
+    this.on('input', function(msg) {
+      if (!msg.payload) {
+        node.error('Missing property: msg.payload');
+        return;
+      }
+      var sid = config.language;
+      if (config.language === "") {
+        var exists = false;
 
-          sids.forEach(function (sid) {
-            if (sid.sid === msg.lang) {
-              exists = true;
-            }
-          });
-
-          if (exists) {
-            sid = msg.lang;
-          } else {
-            node.warn("Language passed in on msg.lang is invalid: message not translated");
-            node.send(msg);
-            return;
+        sids.forEach(function (sid) {
+          if (sid.sid === msg.lang) {
+            exists = true;
           }
-        }
-
-        var machine_translation = watson.machine_translation({
-          username: username,
-          password: password,
-          version: 'v1'
         });
 
-        var langs = sid.split("-");
+        if (exists) {
+          sid = msg.lang;
+        } else {
+          node.warn("Language passed in on msg.lang is invalid: message not translated");
+          node.send(msg);
+          return;
+        }
+      }
 
-        machine_translation.translate({
-          text: msg.payload, from : langs[1], to: langs[2] },
-          function (err, response) {
-            if (err) { node.error(err); }
-            else { msg.payload = response.translation || ""; }
-            node.send(msg);
-          });
+      username = username || config.username;
+      password = password || config.password;
 
+      if (!username || !password) {
+        node.error('Missing Language Translation service credentials');
+        return;
+      }
+
+      var machine_translation = watson.machine_translation({
+        username: username,
+        password: password,
+        version: 'v1'
       });
-    }
+
+      var langs = sid.split("-");
+
+      machine_translation.translate({
+        text: msg.payload, from : langs[1], to: langs[2] },
+        function (err, response) {
+          if (err) { node.error(err); }
+          else { msg.payload = response.translation || ""; }
+          node.send(msg);
+        });
+
+    });
   }
   RED.nodes.registerType("watson-translate",SMTNode);
 };

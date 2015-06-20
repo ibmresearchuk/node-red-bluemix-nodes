@@ -22,7 +22,14 @@ module.exports = function(RED) {
   var services = cfenv.getAppEnv().services, 
     service;
 
-  if (services.visual_recognition) service = services.visual_recognition[0];
+  var username, password;
+
+  var service = cfenv.getAppEnv().getServiceCreds(/visual recognition/i)
+
+  if (service) {
+    username = service.username;
+    password = service.password;
+  }
 
   RED.httpAdmin.get('/watson-visual-recognition/vcap', function(req, res) {
     res.json(service);
@@ -32,18 +39,20 @@ module.exports = function(RED) {
     RED.nodes.createNode(this,config);
     var node = this;
 
-    if (!service) {
-      node.error("No visual recognition service bound");
-    } else {
-      var cred = service.credentials;
-      var username = cred.username;
-      var password = cred.password;
-
       this.on('input', function(msg) {
         if (!msg.payload) {
           node.error('Missing property: msg.payload');
           return;
         }
+
+        username = username || config.username;
+        password = password || config.password;
+
+        if (!username || !password) {
+          node.error('Missing Visual Recognition service credentials');
+          return;
+        }
+
         var watson = require('watson-developer-cloud');
 
         var visual_recognition = watson.visual_recognition({
@@ -90,7 +99,6 @@ module.exports = function(RED) {
           node.error('Invalid property: msg.payload');
         }
       });
-    }
   }
   RED.nodes.registerType("watson-visual-recognition",Node);
 };

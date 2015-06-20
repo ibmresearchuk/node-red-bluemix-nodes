@@ -20,16 +20,18 @@ module.exports = function (RED) {
   var services = cfenv.getAppEnv().services, 
     service;
 
-  if (services.message_resonance) service = services.message_resonance[0];
+  var username, password;
+  var message_resonance;
+
+  var service = cfenv.getAppEnv().getServiceCreds(/message resonance/i)
 
   if (service) {
-    var cred = service.credentials;
-    var username = cred.username;
-    var password = cred.password;
+    username = service.username;
+    password = service.password;
 
     var watson = require('watson-developer-cloud');
 
-    var message_resonance = watson.message_resonance({
+    message_resonance = watson.message_resonance({
       username: username,
       password: password,
       version: 'v1'
@@ -54,30 +56,37 @@ module.exports = function (RED) {
     RED.nodes.createNode(this, config);
     var node = this;
 
-    if (!service) {
-      node.error('No message resonance service bound');
-    } else {
-      this.on('input', function (msg) {
-        msg.dataset = config.dataset;
+    this.on('input', function (msg) {
+      if (!msg.payload) {
+        node.error('Missing property: msg.payload');
+        return;
+      }
 
-        if (msg.dataset == "") {                    
-          node.warn('Dataset passed in on msg.dataset is invalid: message not analysed.');
+      username = username || config.username;
+      password = password || config.password;
+
+      if (!username || !password) {
+        node.error('Missing Question and Answer service credentials');
+        return;
+      }
+
+      if (config.dataset == "") {                    
+        node.warn('Dataset passed in on msg.dataset is invalid: message not analysed.');
+        node.send(msg);
+        return;
+      }
+
+      message_resonance.resonance({text: msg.payload, dataset: config.dataset }, function (err, response) {
+        if (err) {
+          node.error(err);
           node.send(msg);
           return;
         }
 
-        message_resonance.resonance({text: msg.payload, dataset: msg.dataset }, function (err, response) {
-          if (err) {
-            node.error(err);
-            node.send(msg);
-            return;
-          }
-
-          msg.resonance = response.resonances;
-          node.send(msg);
-        });
+        msg.resonance = response.resonances;
+        node.send(msg);
       });
-    }
+    });
   }
   RED.nodes.registerType('watson-message-resonance',Node);
 };

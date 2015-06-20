@@ -22,7 +22,14 @@ module.exports = function (RED) {
   var services = cfenv.getAppEnv().services,
     service;
 
-  if (services.speech_to_text) service = services.speech_to_text[0];
+  var username, password;
+
+  var service = cfenv.getAppEnv().getServiceCreds(/speech to text/i)
+
+  if (service) {
+    username = service.username;
+    password = service.password;
+  }
 
   RED.httpAdmin.get('/watson-speech-to-text/vcap', function (req, res) {
     res.json(service);
@@ -32,70 +39,70 @@ module.exports = function (RED) {
     RED.nodes.createNode(this, config);
     var node = this;
 
-    if (!service) {
-      node.error('No speech to text service bound');
-    } else {
-      var cred = service.credentials;
-      var username = cred.username;
-      var password = cred.password;
+    this.on('input', function (msg) {
+      if (!msg.payload) {
+        node.error('Missing property: msg.payload');
+        return;
+      }
 
-      this.on('input', function (msg) {
-        if (!msg.payload) {
-          node.error('Missing property: msg.payload');
-          return;
-        }
+      username = username || config.username;
+      password = password || config.password;
 
-        var watson = require('watson-developer-cloud');
+      if (!username || !password) {
+        node.error('Missing Speech To Text service credentials');
+        return;
+      }
 
-        var speech_to_text = watson.speech_to_text({
-          username: username,
-          password: password,
-          version: 'v1'
-        });
+      var watson = require('watson-developer-cloud');
 
-        var s2t = function (audio, cb) {
-          var params = {
-            audio: audio,
-            content_type: 'audio/l16; rate=44100'
-          };
-          speech_to_text.recognize(params, function (err, res) {
-            if (err) {
-              console.log(err);
-            } else {
-              msg.transcription = '';
-              if (res.results.length && res.results[0].alternatives.length) {
-                msg.transcription = res.results[0].alternatives[0].transcript;
-              }
-            }
-
-            node.send(msg);
-            if (cb) cb();
-          });
-        }
-
-        if (typeof msg.payload === 'string'){ 
-          var temp = require('temp');
-          temp.track();
-
-          temp.open({suffix: '.wav'}, function (err, info) {
-            if (err) return;
-
-            var wstream = fs.createWriteStream(info.path)
-            wstream.on('finish', function () {
-              s2t(fs.createReadStream(info.path), temp.cleanup);
-            });
-
-            request(msg.payload)
-              .pipe(wstream);
-          });
-        } else if (msg.payload instanceof Buffer) {
-          var streamifier = require('streamifier')
-          s2t(streamifier.createReadStream(msg.payload));
-        } else {
-          node.error('Invalid property: msg.payload');
-        }
+      var speech_to_text = watson.speech_to_text({
+        username: username,
+        password: password,
+        version: 'v1'
       });
-    }
+
+      var s2t = function (audio, cb) {
+        var params = {
+          audio: audio,
+          content_type: 'audio/l16; rate=44100'
+        };
+        speech_to_text.recognize(params, function (err, res) {
+          if (err) {
+            console.log(err);
+          } else {
+            msg.transcription = '';
+            if (res.results.length && res.results[0].alternatives.length) {
+              msg.transcription = res.results[0].alternatives[0].transcript;
+            }
+          }
+
+          node.send(msg);
+          if (cb) cb();
+        });
+      }
+
+      if (typeof msg.payload === 'string'){ 
+        var temp = require('temp');
+        temp.track();
+
+        temp.open({suffix: '.wav'}, function (err, info) {
+          if (err) return;
+
+          var wstream = fs.createWriteStream(info.path)
+          wstream.on('finish', function () {
+            s2t(fs.createReadStream(info.path), temp.cleanup);
+          });
+
+          request(msg.payload)
+          .pipe(wstream);
+        });
+      } else if (msg.payload instanceof Buffer) {
+        var streamifier = require('streamifier')
+        s2t(streamifier.createReadStream(msg.payload));
+      } else {
+        node.error('Invalid property: msg.payload');
+      }
+    });
   }
   RED.nodes.registerType('watson-speech-to-text', Node);
 };

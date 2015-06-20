@@ -19,6 +19,14 @@
         <label for="node-input-name"><i class="fa fa-tag"></i> Name</label>
         <input type="text" id="node-input-name" placeholder="Name">
     </div>
+    <div class="form-row credentials">
+        <label for="node-input-username"><i class="fa fa-user"></i> Username</label>
+        <input type="text" id="node-input-username" placeholder="Username">
+    </div>
+    <div class="form-row credentials">
+        <label for="node-input-password"><i class="fa fa-key"></i> Password</label>
+        <input type="text" id="node-input-password" placeholder="Password">
+    </div>
     <div class="form-row">
         <label for="node-input-voice"><i class="fa fa-book"></i> Voice</label>
         <select type="text" id="node-input-voice" style="display: inline-block; width: 70%;">
@@ -52,6 +60,8 @@
             category: 'IBM Watson',
             defaults: {
                 name: {value: ""},
+                username: {value: ""},
+                password: {value: ""},
                 voice: {value: "VoiceEnUsMichael"}
             },
             color: "rgb(140, 198, 63)",
@@ -66,12 +76,14 @@
                 return this.name ? "node_label_italic" : "";
             },
             oneditprepare: function() {
-                $.getJSON('watson-text-to-speech/vcap/', function(service) {
-                    if (!service) {
-                        $("#node-missing-service-warning").show();
-                    }
-                });
+              $.getJSON('watson-text-to-speech/vcap/')
+               .done(function (service) {
+                  $('.credentials').toggle(!service);
+                })
+              .fail(function () {
+                $('.credentials').show();
+              })
             }
         });
-    })();
+     })();
 </script>

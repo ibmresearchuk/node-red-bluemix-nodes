@@ -3,6 +3,7 @@
     "version": "0.2.7",
     "description": "A collection of extra Node-RED nodes for IBM Bluemix.",
     "dependencies": {
+        "alchemy-api": "jthomas/node-alchemy",
         "cfenv": "~1.0.0",
         "mongodb": "~1.4.x",
         "mqlight": ">=1.0.2014091000",
@@ -33,6 +34,8 @@
     ],
     "node-red": {
         "nodes": {
+            "alchemy-feature-extract": "alchemy/feature-extract.js",
+            "alchemy-image-analysis": "alchemy/image-analysis.js",
             "tcp": "io/31-tcpin-cf.js",
             "udp": "io/32-udp-cf.js",
             "mqlight": "mqlight/mqlight.js",

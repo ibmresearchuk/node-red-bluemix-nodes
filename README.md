@@ -44,6 +44,16 @@ The current release contains the following nodes:
 - Visual Recognition
     - Analyze visual appearance of images to understand their contents
 
+### Alchemy:
+
+- Feature Extract 
+    - Analyse a single piece of text content (either public URL, HTML or raw text)
+      to extract multiple AlchemyAPI detected features, e.g. entities, keywords,
+      sentiment.
+- Image Analysis
+    - Upload an image to detect either faces, URL text or
+      content present in the image.
+
 ### Contributing
 
 For simple typos and single line fixes please just raise an issue pointing out
