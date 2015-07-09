@@ -17,9 +17,6 @@
 module.exports = function(RED) {
   var cfenv = require('cfenv');
 
-  var services = cfenv.getAppEnv().services, 
-    service;
-
   var username, password;
 
   var service = cfenv.getAppEnv().getServiceCreds(/text to speech/i)
@@ -45,20 +42,21 @@ module.exports = function(RED) {
         return;
       }
 
-      username = username || config.username;
-      password = password || config.password;
+      username = config.username || username;
+      password = config.password || password;
 
       if (!username || !password) {
         node.error('Missing Speech To Text service credentials');
         return;
       }
- 
+
       var watson = require('watson-developer-cloud');
 
       var text_to_speech = watson.text_to_speech({
         username: username,
         password: password,
-        version: 'v1'
+        version: 'v1',
+        url: 'https://stream.watsonplatform.net/text-to-speech/api'
       });
 
       var params = {
@@ -67,16 +65,15 @@ module.exports = function(RED) {
         accept: 'audio/wav'
       };
 
-      toArray(text_to_speech.synthesize(params), function (err, arr) {
+      text_to_speech.synthesize(params, function (err, body, response) {
         if (err) {
-          console.log(err);
+          node.error(err);
         } else {
-          msg.speech = Buffer.concat(arr);
+          msg.speech = body;
         }
         node.send(msg);
       })
-
-    });
+    })
   }
   RED.nodes.registerType("watson-text-to-speech", Node);
 };

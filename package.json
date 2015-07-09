@@ -1,56 +1,56 @@
 {
-    "name": "node-red-bluemix-nodes",
-    "version": "0.2.7",
-    "description": "A collection of extra Node-RED nodes for IBM Bluemix.",
-    "dependencies": {
-        "alchemy-api": "jthomas/node-alchemy",
-        "cfenv": "~1.0.0",
-        "mongodb": "~1.4.x",
-        "mqlight": ">=1.0.2014091000",
-        "request": "~2.53.0",
-        "stream-to-array": "^2.0.2",
-        "streamifier": "^0.1.1",
-        "temp": "^0.8.3",
-        "twilio": "~1.6.0",
-        "watson-developer-cloud": "^0.9.4",
-        "when": "~3.x",
-        "xml2js": "^0.4.6"
-    },
-    "repository": {
-        "type": "git",
-        "url": "https://github.com/node-red/node-red-bluemix-nodes"
-    },
-    "license": "Apache-2.0",
-    "keywords": [
-        "node-red",
-        "bluemix",
-        "io",
-        "tcp",
-        "udp",
-        "mongodb",
-        "twilio",
-        "mqlight",
-        "watson"
-    ],
-    "node-red": {
-        "nodes": {
-            "alchemy-feature-extract": "alchemy/feature-extract.js",
-            "alchemy-image-analysis": "alchemy/image-analysis.js",
-            "tcp": "io/31-tcpin-cf.js",
-            "udp": "io/32-udp-cf.js",
-            "mqlight": "mqlight/mqlight.js",
-            "mongodb": "mongo/66-mongodb-cf.js",
-            "twilio": "twilio/56-twilio-cf.js",
-            "watson-question-answer": "watson/qa.js",
-            "watson-language-identification": "watson/lid.js",
-            "watson-translate": "watson/smt.js",
-            "watson-message-resonance": "watson/mr.js",
-            "watson-personality-insights": "watson/pi.js",
-            "watson-relationship-extraction": "watson/re.js",
-            "watson-speech-to-text": "watson/s2t.js",
-            "watson-text-to-speech": "watson/t2s.js",
-            "watson-tradeoff-analytics": "watson/ta.js",
-            "watson-visual-recognition": "watson/vr.js"
-        }
+  "name": "node-red-bluemix-nodes",
+  "version": "0.2.7",
+  "description": "A collection of extra Node-RED nodes for IBM Bluemix.",
+  "dependencies": {
+    "alchemy-api": "^1.3.0",
+    "cfenv": "~1.0.0",
+    "file-type": "^2.7.0",
+    "mongodb": "~1.4.x",
+    "mqlight": ">=1.0.2014091000",
+    "request": "~2.53.0",
+    "stream-to-array": "^2.0.2",
+    "temp": "^0.8.3",
+    "twilio": "~1.6.0",
+    "watson-developer-cloud": "^0.9.23",
+    "when": "~3.x",
+    "xml2js": "^0.4.6"
+  },
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/node-red/node-red-bluemix-nodes"
+  },
+  "license": "Apache-2.0",
+  "keywords": [
+    "node-red",
+    "bluemix",
+    "io",
+    "tcp",
+    "udp",
+    "mongodb",
+    "twilio",
+    "mqlight",
+    "watson"
+  ],
+  "node-red": {
+    "nodes": {
+      "alchemy-feature-extract": "alchemy/feature-extract.js",
+      "alchemy-image-analysis": "alchemy/image-analysis.js",
+      "tcp": "io/31-tcpin-cf.js",
+      "udp": "io/32-udp-cf.js",
+      "mqlight": "mqlight/mqlight.js",
+      "mongodb": "mongo/66-mongodb-cf.js",
+      "twilio": "twilio/56-twilio-cf.js",
+      "watson-question-answer": "watson/qa.js",
+      "watson-language-identification": "watson/lid.js",
+      "watson-translate": "watson/smt.js",
+      "watson-message-resonance": "watson/mr.js",
+      "watson-personality-insights": "watson/pi.js",
+      "watson-relationship-extraction": "watson/re.js",
+      "watson-speech-to-text": "watson/s2t.js",
+      "watson-text-to-speech": "watson/t2s.js",
+      "watson-tradeoff-analytics": "watson/ta.js",
+      "watson-visual-recognition": "watson/vr.js"
     }
+  }
 }

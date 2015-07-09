@@ -47,23 +47,23 @@ module.exports = function (RED) {
       password = password || config.password;
 
       if (!username || !password) {
-        node.error('Missing Question and Answer service credentials');
+        node.error('Missing Language Identification service credentials');
         return;
       }
 
       var watson = require('watson-developer-cloud');
 
-      var language_identification = watson.language_identification({
+      var language_translation = watson.language_translation({
         username: username,
         password: password,
-        version: 'v1'
+        version: 'v2'
       });
 
-      language_identification.identify({text: msg.payload}, function (err, response) {
+      language_translation.identify({text: msg.payload}, function (err, response) {
         if (err) {
           node.error(err);
         } else {
-          msg.lang = response.language;
+          msg.lang = response.languages[0];
         }
 
         node.send(msg);

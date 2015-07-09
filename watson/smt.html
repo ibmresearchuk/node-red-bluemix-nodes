@@ -28,22 +28,41 @@
         <input type="text" id="node-input-password" placeholder="Password">
     </div>
     <div class="form-row">
-        <label for="node-input-language"><i class="fa fa-comments-o"></i> Language</label>
-        <select type="text" id="node-input-language" style="display: inline-block; vertical-align:middle; width: 70%;">
-            <option value="">set translation language code in msg.lang</option>
+        <label for="node-input-domain"><i class="fa fa-book"></i>Domain</label>
+        <select type="text" id="node-input-domain" style="display: inline-block; vertical-align:middle; width: 70%;">
+            <option value="news" selected>News</option>
+            <option value="conversational">Conversational</option>
         </select>
     </div>
-    <div class="form-tips" id="node-missing-service-warning" style="display: none"><i class="fa fa-warning"></i><b> Warning:</b> There is no Machine Translation service connected
+    <div class="form-row">
+        <label for="node-input-srclang"><i class="fa fa-comments-o"></i>Source</label>
+        <select type="text" id="node-input-srclang" style="display: inline-block; vertical-align:middle; width: 70%;">
+            <option value="en">English</option>
+            <option value="fr">French</option>
+            <option value="es">Spanish</option>
+            <option value="pt">Portugese</option>
+            <option value="ar">Arabic</option>
+        </select>
+    </div>
+    <div class="form-row">
+        <label for="node-input-destlang"><i class="fa fa-comments-o"></i>Target</label>
+        <select type="text" id="node-input-destlang" style="display: inline-block; vertical-align:middle; width: 70%;">
+            <option value="en">English</option>
+            <option value="fr">French</option>
+            <option value="es">Spanish</option>
+            <option value="pt">Portugese</option>
+            <option value="ar">Arabic</option>
+        </select>
     </div>
 </script>
 
 <script type="text/x-red" data-help-name="watson-translate">
-    <p>The Machine Translation service enables you to translate text from one language to another.</p>
+    <p>The Language Translation service enables you to translate text from one language to another.</p>
     <p>The text to translate should be passed in on <b>msg.payload</b>.</p>
     <p>The translated text will be returned on <b>msg.payload</b>.</p>
     <p>You can set the translation language code in <b>msg.lang</b>. If another language is set in the node then <b>msg.lang</b> will be overridden.</p>
     <p>The translation language code should be in the form <i>'mt-from-to'</i> where <i>from</i> and <i>to</i> are language codes, eg. enus. If the translation language code passed in is invalid, the message will not be translated.</p>
-    <p>For more information about the Machine Translation service, read the <a href="http://www.ibm.com/smarterplanet/us/en/ibmwatson/developercloud/machine-translation.html">documentation</a>.</p>
+    <p>For more information about the Language Translation service, read the <a href="http://www.ibm.com/smarterplanet/us/en/ibmwatson/developercloud/language-translation.html">documentation</a>.</p>
 </script>
 
 <script type="text/javascript">
@@ -55,17 +74,6 @@
             $.getJSON('watson-translate/vcap/')
               .done(function (sids) {
                 $('.credentials').toggle(!sids);
-                if (sids.length === 0) {
-                  $("#node-missing-service-warning").show();
-                } else {
-                  var select = $('#node-input-language');
-                  for (var i = 0; i < sids.length; ++i) {
-                    var sid = sids[i].sid;
-                    var option = "<option value=\"" + sid + "\">"+ sids[i].description + "</option>";
-                    select.append(option);
-                  }
-                  select.find("option").filter(function() {return $(this).val() === node.language;}).attr('selected', true);
-                }
               })
               .fail(function () {
                 $('.credentials').show();
@@ -78,15 +86,17 @@
                 name: {value: ""},
                 username: {value: ""},
                 password: {value: ""},
-                language: {value: ""}
+                srclang: {value: "en"},
+                destlang: {value: "fr"},
+                domain: {value: "news"}
             },
             color: "rgb(140, 198, 63)",
             inputs: 1,
             outputs: 1,
             icon: "translation.png",
-            paletteLabel: "machine translation",
+            paletteLabel: "language translation",
             label: function() {
-                return this.name || "machine translation";
+                return this.name || "language translation";
             },
             labelStyle: function() {
                 return this.name ? "node_label_italic" : "";

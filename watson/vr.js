@@ -18,9 +18,9 @@ module.exports = function(RED) {
   var request = require('request');
   var cfenv = require('cfenv');
   var fs = require('fs');
-
-  var services = cfenv.getAppEnv().services, 
-    service;
+  var temp = require('temp');
+  var fileType = require('file-type');
+  temp.track();
 
   var username, password;
 
@@ -45,6 +45,11 @@ module.exports = function(RED) {
           return;
         }
 
+        if (!msg.payload instanceof Buffer || !typeof msg.payload === 'string') {
+          node.error('Invalid property: msg.payload, must be a URL or a Buffer.');
+          return;
+        }
+
         username = username || config.username;
         password = password || config.password;
 
@@ -61,15 +66,27 @@ module.exports = function(RED) {
           version: 'v1'
         });
 
-        var s2t = function (image, cb) {
-          var params = {
-            image_file: image
-          };
-          visual_recognition.recognize(params, function(err, res) {
+        var file_extension = function (file) {
+          var ext = '.jpeg';
+
+          // For URLs, look for file extension in the path, default to JPEG.
+          if (typeof file === 'string') {
+            var match = file.match(/\.[\w]{3,4}$/i)
+            ext = match && match[0]
+          // ...for Buffers, we can look at the file header.
+          } else if (file instanceof Buffer) {
+            ext = '.' + fileType(file).ext;
+          }
+
+          return ext;
+        }
+
+        var recognize = function (image, cb) {
+          visual_recognition.recognize({image_file: image}, function(err, res) {
             if (err) {
               console.log(err);
             } else {
-              msg.labels = res.images[0].labels;
+              msg.labels = res.images && res.images[0].labels;
             }
 
             node.send(msg);
@@ -77,27 +94,30 @@ module.exports = function(RED) {
           });
         }
 
-        if (typeof msg.payload === 'string'){ 
-          var temp = require('temp');
-          temp.track();
-
-          temp.open({suffix: '.jpg'}, function (err, info) {
-            if (err) return;
-
-            var wstream = fs.createWriteStream(info.path)
-            wstream.on('finish', function () {
-              s2t(fs.createReadStream(info.path), temp.cleanup);
+        var stream_buffer = function (file, contents, cb) {
+          fs.writeFile(file, contents, function (err) {
+              if (err) throw err;
+              cb();
             });
+        };
 
-            request(msg.payload)
-              .pipe(wstream);
+        var stream_url = function (file, location, cb) { 
+          var wstream = fs.createWriteStream(file)
+          wstream.on('finish', cb);
+
+          request(location)
+            .pipe(wstream);
+        };
+
+        temp.open({suffix: file_extension(msg.payload)}, function (err, info) {
+          if (err) throw err;
+
+          var stream_payload = (typeof msg.payload === 'string') ? stream_url : stream_buffer;
+
+          stream_payload(info.path, msg.payload, function () {
+            recognize(fs.createReadStream(info.path), temp.cleanup);
           });
-        } else if (msg.payload instanceof Buffer) {
-          var streamifier = require('streamifier')
-          s2t(streamifier.createReadStream(msg.payload));
-        } else {
-          node.error('Invalid property: msg.payload');
-        }
+        });
       });
   }
   RED.nodes.registerType("watson-visual-recognition",Node);

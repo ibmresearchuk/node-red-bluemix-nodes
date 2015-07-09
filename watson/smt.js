@@ -31,38 +31,35 @@ module.exports = function(RED) {
   }
  
   RED.httpAdmin.get('/watson-translate/vcap', function(req, res) {
-    res.json(service ? service.credentials.sids : null);
+    res.json(service);
   });
 
   function SMTNode(config) {
     RED.nodes.createNode(this, config);
     var node = this;
 
-    // TODO: What if user inputs creds manually?
-    var sids = service.sids;
-
     this.on('input', function(msg) {
       if (!msg.payload) {
         node.error('Missing property: msg.payload');
         return;
       }
-      var sid = config.language;
-      if (config.language === "") {
-        var exists = false;
 
-        sids.forEach(function (sid) {
-          if (sid.sid === msg.lang) {
-            exists = true;
-          }
-        });
+      if (!config.srclang) {
+        node.warn("Missing source language, message not translated");
+        node.send(msg);
+        return;
+      }
 
-        if (exists) {
-          sid = msg.lang;
-        } else {
-          node.warn("Language passed in on msg.lang is invalid: message not translated");
-          node.send(msg);
-          return;
-        }
+      if (!config.destlang) {
+        node.warn("Missing target language, message not translated");
+        node.send(msg);
+        return;
+      }
+      
+      if (!config.domain) {
+        node.warn("Missing translation domain, message not translated");
+        node.send(msg);
+        return;
       }
 
       username = username || config.username;
@@ -73,19 +70,21 @@ module.exports = function(RED) {
         return;
       }
 
-      var machine_translation = watson.machine_translation({
+      var language_translation = watson.language_translation({
         username: username,
         password: password,
-        version: 'v1'
+        version: 'v2'
       });
 
-      var langs = sid.split("-");
+      var model_id = config.srclang + '-' 
+        + config.destlang 
+        + (config.domain === 'news' ? '' : '-conversational');
 
-      machine_translation.translate({
-        text: msg.payload, from : langs[1], to: langs[2] },
+      language_translation.translate({
+        text: msg.payload, model_id: model_id},
         function (err, response) {
           if (err) { node.error(err); }
-          else { msg.payload = response.translation || ""; }
+          else { msg.payload = response.translations[0].translation; }
           node.send(msg);
         });
 
