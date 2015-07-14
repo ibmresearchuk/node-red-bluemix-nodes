@@ -20,7 +20,14 @@ module.exports = function (RED) {
   var services = cfenv.getAppEnv().services, 
     service;
 
-  if (services.personality_insights) service = services.personality_insights[0];
+  var username, password;
+
+  var service = cfenv.getAppEnv().getServiceCreds(/personality insights/i)
+
+  if (service) {
+    username = service.username;
+    password = service.password;
+  }
 
   RED.httpAdmin.get('/watson-personality-insights/vcap', function (req, res) {
     res.json(service);
@@ -30,42 +37,42 @@ module.exports = function (RED) {
     RED.nodes.createNode(this,config);
     var node = this;
 
-    if (!service) {
-      node.error("No personality insights service bound");
-    } else {
-      var cred = service.credentials;
-      var username = cred.username;
-      var password = cred.password;
+    this.on('input', function (msg) {
+      if (!msg.payload) {
+        node.error('Missing property: msg.payload');
+        return;
+      }
+      if (msg.payload.split(' ').length < 100) {
+        node.error('Personality insights requires a minimum of one hundred words.');
+        return;
+      }
 
-      this.on('input', function (msg) {
-        if (!msg.payload) {
-          node.error('Missing property: msg.payload');
-          return;
-        }
-        if (msg.payload.split(' ').length < 100) {
-          node.error('Personality insights requires a minimum of one hundred words.');
-          return;
-        }
-        
-        var watson = require('watson-developer-cloud');
+      username = username || config.username;
+      password = password || config.password;
 
-        var personality_insights = watson.personality_insights({
-          username: username,
-          password: password,
-          version: 'v2'
-        });
+      if (!username || !password) {
+        node.error('Missing Personality Insights service credentials');
+        return;
+      }
+ 
+      var watson = require('watson-developer-cloud');
 
-        personality_insights.profile({text: msg.payload }, function (err, response) {
-          if (err) {
-            node.error(err);
-          } else{
-            msg.insights = response.tree;
-          }
-
-          node.send(msg);
-        });
+      var personality_insights = watson.personality_insights({
+        username: username,
+        password: password,
+        version: 'v2'
       });
-    }
+
+      personality_insights.profile({text: msg.payload }, function (err, response) {
+        if (err) {
+          node.error(err);
+        } else{
+          msg.insights = response.tree;
+        }
+
+        node.send(msg);
+      });
+    });
   }
   RED.nodes.registerType("watson-personality-insights",Node);
 };

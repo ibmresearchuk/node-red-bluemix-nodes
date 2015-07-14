@@ -20,7 +20,14 @@ module.exports = function (RED) {
   var services = cfenv.getAppEnv().services,
     service;
 
-  if (services.language_identification) service = services.language_identification[0];
+  var username, password;
+
+  var service = cfenv.getAppEnv().getServiceCreds(/language translation/i)
+
+  if (service) {
+    username = service.username;
+    password = service.password;
+  }
 
   RED.httpAdmin.get('/watson-language-identification/vcap', function (req, res) {
     res.json(service);
@@ -30,38 +37,38 @@ module.exports = function (RED) {
     RED.nodes.createNode(this, config);
     var node = this;
 
-    if (!service) {
-      node.error('No language identification service bound');
-    } else {
-      var cred = service.credentials;
-      var username = cred.username;
-      var password = cred.password;
+    this.on('input', function (msg) {
+      if (!msg.payload) {
+        node.error('Missing property: msg.payload');
+        return;
+      }
 
-      this.on('input', function (msg) {
-        if (!msg.payload) {
-          node.error('Missing property: msg.payload');
-          return;
+      username = username || config.username;
+      password = password || config.password;
+
+      if (!username || !password) {
+        node.error('Missing Language Identification service credentials');
+        return;
+      }
+
+      var watson = require('watson-developer-cloud');
+
+      var language_translation = watson.language_translation({
+        username: username,
+        password: password,
+        version: 'v2'
+      });
+
+      language_translation.identify({text: msg.payload}, function (err, response) {
+        if (err) {
+          node.error(err);
+        } else {
+          msg.lang = response.languages[0];
         }
 
-        var watson = require('watson-developer-cloud');
-
-        var language_identification = watson.language_identification({
-          username: username,
-          password: password,
-          version: 'v1'
-        });
-
-        language_identification.identify({text: msg.payload}, function (err, response) {
-          if (err) {
-            node.error(err);
-          } else {
-            msg.lang = response.language;
-          }
-
-          node.send(msg);
-        });
+        node.send(msg);
       });
-    }
+    });
   }
   RED.nodes.registerType('watson-language-identification',Node);
 };
