@@ -1,0 +1,86 @@
+<!--
+  Copyright 2013,2015 IBM Corp.
+
+  Licensed under the Apache License, Version 2.0 (the "License");
+  you may not use this file except in compliance with the License.
+  You may obtain a copy of the License at
+
+  http://www.apache.org/licenses/LICENSE-2.0
+
+  Unless required by applicable law or agreed to in writing, software
+  distributed under the License is distributed on an "AS IS" BASIS,
+  WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+  See the License for the specific language governing permissions and
+  limitations under the License.
+-->
+
+<script type="text/x-red" data-template-name="alchemy-image-analysis">
+    <div class="form-row">
+        <label for="node-input-name"><i class="fa fa-tag"></i> Name</label>
+        <input type="text" id="node-input-name" placeholder="Name">
+    </div>
+    <div class="form-row credentials">
+        <label for="node-input-apikey"><i class="fa fa-key"></i> API Key</label>
+        <input type="text" id="node-input-apikey" placeholder="API Key">
+    </div>
+    <div class="form-row">
+        <label for="node-input-image-feature"><i class="fa fa-book"></i> Detect: </label>
+        <select type="text" id="node-input-image-feature" style="display: inline-block; width: 70%;">
+            <option value="imageFaces">Faces</option>
+            <option value="imageLink">URLs</option>
+            <option value="imageKeywords">Content Tags</option>
+        </select>
+    </div>
+    <div class="form-tips" id="node-missing-service-warning" style="display: none"><i class="fa fa-warning"></i><b> Warning:</b> There is no Alchemy API service connected
+    </div>
+</script>
+
+<script type="text/x-red" data-help-name="alchemy-image-analysis">
+    <p>Using the Image Analysis node, you can use the Alchemy APIs to analyse images for face detection, content tags and links.</p>
+    <p>The following features are available for analysis:</p>
+    <ul>
+        <li><b>Faces</b>, discover human faces within the images.</li>
+        <li><b>URLs</b>, discover URLs within the images.</li>
+        <li><b>Content Tags</b>, extract content tags from the image.</li>
+    </ul>
+    <p>For full details on the feature details and response values, please see the <a href="http://www.alchemyapi.com/api">Alchemy API documentation</a></p>
+    <p>The content to be analysed should be passed in on <b>msg.payload</b>.</p>
+    <p>Valid <b>msg.payload</b> types: URL or Buffer containing raw image bytes.</p>
+    <p>If you need to send custom parameters along with each feature, set those parameters as children of the <b>msg.alchemy_options</b> object.</p>
+    <br>
+    <p>Results from the Alchemy API service will made available at <b>msg.result</b>.</p>
+</script>
+
+<script type="text/javascript">
+    (function() {
+
+        RED.nodes.registerType('alchemy-image-analysis', {
+            category: 'Alchemy API',
+            defaults: {
+              name: {value: ""},
+              apikey: {value: ""},
+              "image-feature": {value: ""}
+            },
+            color: '#00A2FF',
+            inputs: 1,
+            outputs: 1,
+            icon: "alchemy.png",
+            paletteLabel: "Image Analysis",
+            label: function() {
+                return this.name || "Image Analysis";
+            },
+            labelStyle: function() {
+                return this.name ? "node_label_italic" : "";
+            },
+            oneditprepare: function() {
+              $.getJSON('alchemy-image-analysis/vcap/')
+                  .done(function (service) {
+                    $('.credentials').toggle(!service);
+                  })
+                  .fail(function () {
+                    $('.credentials').show();
+                  })
+            }
+        });
+    })();
+</script>

@@ -20,62 +20,63 @@ module.exports = function (RED) {
   var services = cfenv.getAppEnv().services,
     service;
 
-  if (services.relationship_extraction) service = services.relationship_extraction[0];
+  var username, password;
+
+  var service = cfenv.getAppEnv().getServiceCreds(/relationship extraction/i)
+
+  if (service) {
+    username = service.username;
+    password = service.password;
+  }
 
   RED.httpAdmin.get('/watson-relationship-extraction/vcap', function (req, res) {
-    if (service) {
-      res.json(service.credentials.sids);
-      return;
-    } 
-    res.json(null);
+    res.json(service ? service.credentials.sids : null);
   });
 
   function Node(config) {
     RED.nodes.createNode(this,config);
     var node = this;
 
-    if (!service) {
-      node.error("No relationship extraction service bound");
-    } else {
-      var cred = service.credentials;
-      var username = cred.username;
-      var password = cred.password;
+    this.on('input', function (msg) {
+      if (config.dataset == "") {                    
+        node.warn("Dataset passed in on msg.dataset is invalid: message not analysed.");
+        return;
+      }
+      if (!msg.payload) {
+        node.error('Missing property: msg.payload');
+        return;
+      }
 
-      this.on('input', function (msg) {
-        msg.dataset = config.dataset;
+      username = username || config.username;
+      password = password || config.password;
 
-        if (msg.dataset == "") {                    
-          node.warn("Dataset passed in on msg.dataset is invalid: message not analysed.");
+      if (!username || !password) {
+        node.error('Missing Relationship Extraction service credentials');
+        return;
+      }
+
+      var watson = require('watson-developer-cloud');
+
+      var relationship_extraction = watson.relationship_extraction({
+        username: username,
+        password: password,
+        version: 'v1'
+      });
+
+      relationship_extraction.extract({text: msg.payload, dataset: config.dataset }, function (err, response) {
+        if (err) {
+          node.error(err);
+          node.send(msg);
           return;
         }
-        if (!msg.payload) {
-          node.error('Missing property: msg.payload');
-          return;
-        }
 
-        var watson = require('watson-developer-cloud');
-
-        var relationship_extraction = watson.relationship_extraction({
-          username: username,
-          password: password,
-          version: 'v1'
-        });
-
-        relationship_extraction.extract({text: msg.payload, dataset: msg.dataset }, function (err, response) {
-          if (err) {
-            node.error(err);
-            node.send(msg);
-            return;
-          }
-
-          var parseString = require('xml2js').parseString;                    
-          parseString(response, function (err, result) {                        
-            msg.relationships = result;    
-            node.send(msg);
-          });
+        var parseString = require('xml2js').parseString;                    
+        parseString(response, function (err, result) {                        
+          msg.relationships = result;    
+          node.send(msg);
         });
       });
-    }
+    });
   }
   RED.nodes.registerType("watson-relationship-extraction",Node);
 };

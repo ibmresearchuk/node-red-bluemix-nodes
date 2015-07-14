@@ -1,17 +1,18 @@
 {
     "name": "node-red-bluemix-nodes",
-    "version": "0.2.7",
+    "version": "0.2.8",
     "description": "A collection of extra Node-RED nodes for IBM Bluemix.",
     "dependencies": {
+        "alchemy-api": "^1.3.0",
         "cfenv": "~1.0.0",
+        "file-type": "^2.7.0",
         "mongodb": "~1.4.x",
         "mqlight": ">=1.0.2014091000",
         "request": "~2.53.0",
         "stream-to-array": "^2.0.2",
-        "streamifier": "^0.1.1",
         "temp": "^0.8.3",
         "twilio": "~1.6.0",
-        "watson-developer-cloud": "^0.9.4",
+        "watson-developer-cloud": "^0.9.23",
         "when": "~3.x",
         "xml2js": "^0.4.6"
     },
@@ -29,10 +30,13 @@
         "mongodb",
         "twilio",
         "mqlight",
-        "watson"
+        "watson",
+        "alchemy"
     ],
     "node-red": {
         "nodes": {
+            "alchemy-feature-extract": "alchemy/feature-extract.js",
+            "alchemy-image-analysis": "alchemy/image-analysis.js",
             "tcp": "io/31-tcpin-cf.js",
             "udp": "io/32-udp-cf.js",
             "mqlight": "mqlight/mqlight.js",

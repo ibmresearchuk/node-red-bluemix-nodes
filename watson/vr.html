@@ -19,13 +19,24 @@
         <label for="node-input-name"><i class="fa fa-tag"></i> Name</label>
         <input type="text" id="node-input-name" placeholder="Name">
     </div>
-    <div class="form-tips" id="node-missing-service-warning" style="display: none"><i class="fa fa-warning"></i><b> Warning:</b> There is no Visual Recognition service connected
+    <div class="form-row credentials">
+        <label for="node-input-username"><i class="fa fa-user"></i> Username</label>
+        <input type="text" id="node-input-username" placeholder="Username">
+    </div>
+    <div class="form-row credentials">
+        <label for="node-input-password"><i class="fa fa-key"></i> Password</label>
+        <input type="text" id="node-input-password" placeholder="Password">
     </div>
 </script>
 
 <script type="text/x-red" data-help-name="watson-visual-recognition">
     <p>The Visual Recognition service analyses images to understand their contents. </p>
     <p>The image to be analysed should be passed in on <b>msg.payload</b>.</p>
+    <p>Supported msg.payload types:</b>.</p>
+    <ul>
+        <li><b>String</b> URL to image</li>
+        <li><b>Buffer</b> Raw Image Bytes</li>
+    </ul>
     <p>The identified images labels will be returned on <b>msg.labels</b>.</p>
     <p>For more information about the Visual Recognition service, read the <a href="https://www.ibm.com/smarterplanet/us/en/ibmwatson/developercloud/visual-recognition.html">documentation</a>.</p>
 </script>
@@ -35,7 +46,9 @@
         RED.nodes.registerType('watson-visual-recognition', {
             category: 'IBM Watson',
             defaults: {
-                name: {value: ""}
+                name: {value: ""},
+                username: {value: ""},
+                password: {value: ""}
             },
             color: "rgb(32, 178, 239)",
             inputs: 1,
@@ -49,11 +62,13 @@
                 return this.name ? "node_label_italic" : "";
             },
             oneditprepare: function() {
-                $.getJSON('watson-visual-recognition/vcap/', function(service) {
-                    if (!service) {
-                        $("#node-missing-service-warning").show();
-                    }
-                });
+                $.getJSON('watson-visual-recognition/vcap/')
+                  .done(function (service) {
+                    $('.credentials').toggle(!service);
+                  })
+                  .fail(function () {
+                    $('.credentials').show();
+                  })
             }
         });
     })();
