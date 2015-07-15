@@ -27,7 +27,7 @@ module.exports = function(RED) {
   }
 
   RED.httpAdmin.get('/watson-text-to-speech/vcap', function(req, res) {
-    res.json(service);
+    res.json(service ? {bound_service: true} : null);
   });
 
   function Node(config) {
@@ -43,7 +43,7 @@ module.exports = function(RED) {
       }
 
       username = config.username || username;
-      password = config.password || password;
+      password = password || this.credentials.password;
 
       if (!username || !password) {
         node.error('Missing Speech To Text service credentials');
@@ -75,5 +75,10 @@ module.exports = function(RED) {
       })
     })
   }
-  RED.nodes.registerType("watson-text-to-speech", Node);
+  RED.nodes.registerType("watson-text-to-speech", Node, {
+    credentials: {
+      username: {type:"text"},
+      password: {type:"password"}
+    }
+  });
 };

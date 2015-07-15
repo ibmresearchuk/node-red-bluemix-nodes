@@ -30,7 +30,7 @@ module.exports = function (RED) {
   }
 
   RED.httpAdmin.get('/watson-question-answer/vcap', function (req, res) {
-    res.json(service);
+    res.json(service ? {bound_service: true} : null);
   });
 
   function QANode (config) {
@@ -45,8 +45,8 @@ module.exports = function (RED) {
       var output = config.output || 'top';
       var corpus = config.corpus || 'healthcare';
 
-      username = username || config.username;
-      password = password || config.password;
+      username = username || this.credentials.username;
+      password = password || this.credentials.password;
 
       if (!username || !password) {
         node.error('Missing Question and Answer service credentials');
@@ -100,5 +100,10 @@ module.exports = function (RED) {
       });
     });
   }
-  RED.nodes.registerType('watson-question-answer',QANode);
+  RED.nodes.registerType('watson-question-answer',QANode,{
+    credentials: {
+      username: {type:"text"},
+      password: {type:"password"}
+    }
+});
 };

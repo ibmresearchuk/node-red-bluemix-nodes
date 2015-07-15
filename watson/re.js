@@ -30,7 +30,7 @@ module.exports = function (RED) {
   }
 
   RED.httpAdmin.get('/watson-relationship-extraction/vcap', function (req, res) {
-    res.json(service ? service.credentials.sids : null);
+    res.json(service ? service.sids : null);
   });
 
   function Node(config) {
@@ -47,8 +47,8 @@ module.exports = function (RED) {
         return;
       }
 
-      username = username || config.username;
-      password = password || config.password;
+      username = username || this.credentials.username;
+      password = password || this.credentials.password;
 
       if (!username || !password) {
         node.error('Missing Relationship Extraction service credentials');
@@ -78,5 +78,10 @@ module.exports = function (RED) {
       });
     });
   }
-  RED.nodes.registerType("watson-relationship-extraction",Node);
+  RED.nodes.registerType("watson-relationship-extraction",Node, {
+    credentials: {
+      username: {type:"text"},
+      password: {type:"password"}
+    }
+  });
 };

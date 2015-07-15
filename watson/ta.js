@@ -30,7 +30,7 @@ module.exports = function(RED) {
   }
 
   RED.httpAdmin.get('/watson-tradeoff-analytics/vcap', function(req, res) {
-    res.json(service);
+    res.json(service ? {bound_service: true} : null);
   });
 
   function Node(config) {
@@ -43,8 +43,8 @@ module.exports = function(RED) {
           return;
         }
 
-        username = username || config.username;
-        password = password || config.password;
+        username = username || this.credentials.username;
+        password = password || this.credentials.password;
 
         if (!username || !password) {
           node.error('Missing Tradeoff Analytics service credentials');
@@ -74,5 +74,10 @@ module.exports = function(RED) {
         });
       });
   }
-  RED.nodes.registerType("watson-tradeoff-analytics",Node);
+  RED.nodes.registerType("watson-tradeoff-analytics",Node, {
+    credentials: {
+      username: {type:"text"},
+      password: {type:"password"}
+    }
+  });
 };
