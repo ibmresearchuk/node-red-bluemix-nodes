@@ -15,17 +15,22 @@
 -->
 
 <script type="text/x-red" data-template-name="watson-relationship-extraction">
+    <div id="credentials-check" class="form-row">
+        <div class="form-tips">
+            <i class="fa fa-question-circle"></i><b> Please wait: </b> Checking for bound service credentials...
+        </div>
+    </div>
     <div class="form-row">
         <label for="node-input-name"><i class="fa fa-tag"></i> Name</label>
         <input type="text" id="node-input-name" placeholder="Name">
     </div>
-    <div class="form-row credentials">
+    <div class="form-row credentials" style="display: none;">
         <label for="node-input-username"><i class="fa fa-user"></i> Username</label>
         <input type="text" id="node-input-username" placeholder="Username">
     </div>
-    <div class="form-row credentials">
+    <div class="form-row credentials" style="display: none;">
         <label for="node-input-password"><i class="fa fa-key"></i> Password</label>
-        <input type="text" id="node-input-password" placeholder="Password">
+        <input type="password" id="node-input-password" placeholder="Password">
     </div>
     <div class="form-row">
         <label for="node-input-dataset"><i class="fa fa-comments-o"></i> Dataset</label>
@@ -55,9 +60,11 @@
             category: 'IBM Watson',
             defaults: {
                 name: {value: ""},
-                username: {value: ""},
-                password: {value: ""},
                 dataset: {value: ""}
+            },
+            credentials: {
+              username: {type:"text"},
+              password: {type:"password"}
             },
             color: "rgb(185, 120, 252)",
             inputs: 1,
@@ -71,19 +78,24 @@
                 return this.name ? "node_label_italic" : "";
             },
             oneditprepare: function() {
+              var node = this;
               $.getJSON('watson-relationship-extraction/vcap/') 
                 .done(function (sids) {
                   $('.credentials').toggle(!sids);
-                  var select = $('#node-input-dataset');
-                  for (var i = 0; i < sids.length; ++i) {
-                    var sid = sids[i].sid;
-                    var option = "<option value=\"" + sid + "\">"+ sids[i].description + "</option>";
-                    select.append(option);
+                  if (sids) {
+                    var select = $('#node-input-dataset');
+                    for (var i = 0; i < sids.length; ++i) {
+                      var sid = sids[i].sid;
+                      var option = "<option value=\"" + sid + "\">"+ sids[i].description + "</option>";
+                      select.append(option);
+                    }
+                    select.find("option").filter(function() {return $(this).val() === node.dataset;}).attr('selected', true);
                   }
-                  select.find("option").filter(function() {return $(this).val() === node.dataset;}).attr('selected', true);
                 })
               .fail(function () {
                 $('.credentials').show();
+              }).always(function () {
+                $('#credentials-check').hide();
               })
             }
         });

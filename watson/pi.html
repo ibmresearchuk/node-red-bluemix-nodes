@@ -15,19 +15,22 @@
 -->
 
 <script type="text/x-red" data-template-name="watson-personality-insights">
+    <div id="credentials-check" class="form-row">
+        <div class="form-tips">
+            <i class="fa fa-question-circle"></i><b> Please wait: </b> Checking for bound service credentials...
+        </div>
+    </div>
     <div class="form-row">
         <label for="node-input-name"><i class="fa fa-tag"></i> Name</label>
         <input type="text" id="node-input-name" placeholder="Name">
     </div>
-    <div class="form-row credentials">
+    <div class="form-row credentials" style="display: none;">
         <label for="node-input-username"><i class="fa fa-user"></i> Username</label>
         <input type="text" id="node-input-username" placeholder="Username">
     </div>
-    <div class="form-row credentials">
+    <div class="form-row credentials" style="display: none;">
         <label for="node-input-password"><i class="fa fa-key"></i> Password</label>
-        <input type="text" id="node-input-password" placeholder="Password">
-    </div>
-    <div class="form-tips" id="node-missing-service-warning" style="display: none"><i class="fa fa-warning"></i><b> Warning:</b> There is no Personality Insights service connected
+        <input type="password" id="node-input-password" placeholder="Password">
     </div>
 </script>
 
@@ -43,9 +46,11 @@
         RED.nodes.registerType('watson-personality-insights', {
             category: 'IBM Watson',
             defaults: {
-                name: {value: ""},
-                username: {value: ""},
-                password: {value: ""}
+                name: {value: ""}
+            },
+            credentials: {
+              username: {type:"text"},
+              password: {type:"password"}
             },
             color: "rgb(140, 198, 63)",
             inputs: 1,
@@ -65,6 +70,8 @@
                   })
                   .fail(function () {
                     $('.credentials').show();
+                  }).always(function () {
+                    $('#credentials-check').hide();
                   })
             }
         });

@@ -31,7 +31,7 @@ module.exports = function(RED) {
   }
  
   RED.httpAdmin.get('/watson-translate/vcap', function(req, res) {
-    res.json(service);
+    res.json(service ? {bound_service: true} : null);
   });
 
   function SMTNode(config) {
@@ -62,8 +62,8 @@ module.exports = function(RED) {
         return;
       }
 
-      username = username || config.username;
-      password = password || config.password;
+      username = username || this.credentials.username;
+      password = password || this.credentials.password;
 
       if (!username || !password) {
         node.error('Missing Language Translation service credentials');
@@ -90,5 +90,10 @@ module.exports = function(RED) {
 
     });
   }
-  RED.nodes.registerType("watson-translate",SMTNode);
+  RED.nodes.registerType("watson-translate",SMTNode, {
+    credentials: {
+      username: {type:"text"},
+      password: {type:"password"}
+    }
+  });
 };
