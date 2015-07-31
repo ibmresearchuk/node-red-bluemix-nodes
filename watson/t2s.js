@@ -42,7 +42,7 @@ module.exports = function(RED) {
         return;
       }
 
-      username = config.username || username;
+      username = username || this.credentials.username;
       password = password || this.credentials.password;
 
       if (!username || !password) {

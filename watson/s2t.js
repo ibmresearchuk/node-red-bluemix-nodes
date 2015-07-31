@@ -46,7 +46,7 @@ module.exports = function (RED) {
         return;
       }
 
-      username = config.username || username;
+      username = username || this.credentials.username;
       password = password || this.credentials.password;
 
       if (!username || !password) {
@@ -80,7 +80,7 @@ module.exports = function (RED) {
       });
 
       var s2t = function (audio, sample_rate, cb) {
-        if (sample_rate < min_sample_rate) { 
+        if (sample_rate < min_sample_rate) {
           node.error('Audio sample rate, ' + sample_rate + 'Hz, lower than minimum required sample rate for this model, ' + min_sample_rate + 'Hz.');
           return;
         }
@@ -107,7 +107,7 @@ module.exports = function (RED) {
       }
 
       var is_wav_file = function (audioBuffer) {
-        return (fileType(audioBuffer).ext === 'wav') 
+        return (fileType(audioBuffer).ext === 'wav')
       }
 
       var wav_sample_rate = function (buffer) {
@@ -135,7 +135,7 @@ module.exports = function (RED) {
         });
       };
 
-      var stream_url = function (file, location, cb) { 
+      var stream_url = function (file, location, cb) {
         var wstream = fs.createWriteStream(file)
         wstream.on('finish', function () {
           fs.readFile(file, function (err, buf) {
