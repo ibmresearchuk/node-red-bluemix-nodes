@@ -32,12 +32,19 @@ module.exports = function (RED) {
   var cfenv = require('cfenv'),
     AlchemyAPI = require('alchemy-api');
 
+  var services = cfenv.getAppEnv().services,
+    service;
+
+  var apikey;
+
   var service = cfenv.getAppEnv().getServiceCreds(/alchemy/i);
 
-  var apikey = service ? service.apikey : null;
+  if (service) {
+    apikey = service.apikey;
+  }
 
   RED.httpAdmin.get('/alchemy-feature-extract/vcap', function (req, res) {
-    res.json(service);
+    res.json(service ? {bound_service: true} : null);
   });
 
   function AlchemyFeatureExtractNode (config) {
@@ -50,7 +57,7 @@ module.exports = function (RED) {
         return;
       }
 
-      apikey = apikey || config.apikey;
+      apikey = apikey || this.credentials.apikey;
 
       if (!apikey) {
         node.error('Missing Alchemy API service credentials');
@@ -85,5 +92,9 @@ module.exports = function (RED) {
     });
   }
 
-  RED.nodes.registerType('alchemy-feature-extract', AlchemyFeatureExtractNode);
+  RED.nodes.registerType('alchemy-feature-extract', AlchemyFeatureExtractNode, {
+    credentials: {
+      apikey: {type:"password"}
+    }
+  });
 };
