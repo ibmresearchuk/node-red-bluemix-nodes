@@ -15,13 +15,14 @@
 -->
 
 <script type="text/x-red" data-template-name="alchemy-feature-extract">
-    <div class="form-row">
-        <label for="node-input-name"><i class="fa fa-tag"></i> Name</label>
-        <input type="text" id="node-input-name" placeholder="Name">
+    <div id="credentials-check" class="form-row">
+        <div class="form-tips">
+            <i class="fa fa-question-circle"></i><b> Please wait: </b> Checking for bound service credentials...
+        </div>
     </div>
-    <div class="form-row credentials">
+    <div class="form-row credentials" style="display: none;">
         <label for="node-input-apikey"><i class="fa fa-key"></i> API Key</label>
-        <input type="text" id="node-input-apikey" placeholder="API Key">
+        <input type="password" id="node-input-apikey" placeholder="API Key">
     </div>
     <div class="form-row">
         <label for="node-input-features" style="width: 100%"><i class="fa fa-book"></i> Extract the following features: </label>
@@ -66,6 +67,10 @@
             </div>
           </div>
         </div>
+    <div class="form-row" style="padding-top: 10px;">
+        <label for="node-input-name"><i class="fa fa-tag"></i> Name</label>
+        <input type="text" id="node-input-name" placeholder="Name">
+    </div>
 </script>
 
 <script type="text/x-red" data-help-name="alchemy-feature-extract">
@@ -97,10 +102,9 @@
     (function() {
 
         RED.nodes.registerType('alchemy-feature-extract', {
-            category: 'Alchemy API',
+            category: 'analysis',
             defaults: {
               name: {value: ""},
-              apikey: {value: ""},
               "page-image": {value: ""},
               "image-kw": {value: ""},
               feed: {value: ""},
@@ -113,6 +117,9 @@
               relation: {value: ""},
               "pub-date": {value: ""},
               "doc-sentiment": {value: ""}
+            },
+            credentials: {
+              apikey: {type:"password"}
             },
             color: '#00A2FF',
             inputs: 1,
@@ -132,6 +139,9 @@
                   })
                   .fail(function () {
                     $('.credentials').show();
+                  })
+                  .always(function () {
+                    $('#credentials-check').hide();
                   })
             }
         });
