@@ -70,11 +70,8 @@ module.exports = function (RED) {
           return;
         }
 
-        var parseString = require('xml2js').parseString;                    
-        parseString(response, function (err, result) {                        
-          msg.relationships = result;    
-          node.send(msg);
-        });
+        msg.relationships = response;    
+        node.send(msg);
       });
     });
   }

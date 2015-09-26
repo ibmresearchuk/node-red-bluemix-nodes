@@ -13,8 +13,7 @@
         "temp": "^0.8.3",
         "twilio": "~1.6.0",
         "watson-developer-cloud": "^0.9.23",
-        "when": "~3.x",
-        "xml2js": "^0.4.6"
+        "when": "~3.x"
     },
     "repository": {
         "type": "git",
