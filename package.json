@@ -1,6 +1,6 @@
 {
     "name": "node-red-bluemix-nodes",
-    "version": "0.2.11",
+    "version": "0.2.12",
     "description": "A collection of extra Node-RED nodes for IBM Bluemix.",
     "dependencies": {
         "alchemy-api": "^1.3.0",
@@ -44,7 +44,6 @@
             "watson-question-answer": "watson/qa.js",
             "watson-language-identification": "watson/lid.js",
             "watson-translate": "watson/smt.js",
-            "watson-message-resonance": "watson/mr.js",
             "watson-personality-insights": "watson/pi.js",
             "watson-relationship-extraction": "watson/re.js",
             "watson-speech-to-text": "watson/s2t.js",
