@@ -1,6 +1,6 @@
 {
     "name": "node-red-bluemix-nodes",
-    "version": "0.2.12",
+    "version": "0.2.13",
     "description": "A collection of extra Node-RED nodes for IBM Bluemix.",
     "dependencies": {
         "alchemy-api": "^1.3.0",
@@ -9,7 +9,6 @@
         "mongodb": "~1.4.x",
         "mqlight": ">=1.0.2014091000",
         "request": "~2.53.0",
-        "stream-to-array": "^2.0.2",
         "temp": "^0.8.3",
         "twilio": "~1.6.0",
         "watson-developer-cloud": "^0.9.23",

@@ -34,8 +34,6 @@ module.exports = function(RED) {
     RED.nodes.createNode(this, config);
     var node = this;
 
-    var toArray = require('stream-to-array')
-
     this.on('input', function(msg) {
       if (!msg.payload) {
         node.error('Missing property: msg.payload');
