@@ -58,6 +58,14 @@
             <option class="german" value="de-DE_BirgitVoice">Birgit (Female)</option>
         </select>
     </div>
+    <div class="form-row">
+        <label for="node-input-format"><i class="fa fa-file-audio-o"></i> Format</label>
+        <select type="text" id="node-input-format" style="display: inline-block; width: 70%;" >
+            <option value="audio/wav">WAV</option>
+            <option value="audio/flac">FLAC</option>
+            <option value="audio/ogg; codecs=opus">OGG</option>
+        </select>
+    </div>
 </script>
 
 <script type="text/x-red" data-help-name="watson-text-to-speech">
@@ -83,7 +91,8 @@
             defaults: {
                 name: {value: ""},
                 lang: {value: "english"},
-                voice: {value: "en-US_MichaelVoice"}
+                voice: {value: "en-US_MichaelVoice"},
+                format: {value: "audio/wav"}
             },
             credentials: {
               username: {type:"text"},

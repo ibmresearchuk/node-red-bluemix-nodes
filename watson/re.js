@@ -38,12 +38,9 @@ module.exports = function (RED) {
     var node = this;
 
     this.on('input', function (msg) {
-      if (config.dataset == "") {                    
-        node.warn("Dataset passed in on msg.dataset is invalid: message not analysed.");
-        return;
-      }
       if (!msg.payload) {
-        node.error('Missing property: msg.payload');
+        var message = 'Missing property: msg.payload';
+        node.error(message, msg);
         return;
       }
 
@@ -51,7 +48,8 @@ module.exports = function (RED) {
       password = password || this.credentials.password;
 
       if (!username || !password) {
-        node.error('Missing Relationship Extraction service credentials');
+        var message = 'Missing Relationship Extraction service credentials';
+        node.error(message, msg);
         return;
       }
 
@@ -60,12 +58,14 @@ module.exports = function (RED) {
       var relationship_extraction = watson.relationship_extraction({
         username: username,
         password: password,
-        version: 'v1'
+        version: 'v1-beta'
       });
 
+      node.status({fill:"blue", shape:"dot", text:"requesting"});
       relationship_extraction.extract({text: msg.payload, dataset: config.dataset }, function (err, response) {
+        node.status({})
         if (err) {
-          node.error(err);
+          node.error(err, msg);
           node.send(msg);
           return;
         }

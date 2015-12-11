@@ -32,11 +32,19 @@
         <label for="node-input-password"><i class="fa fa-key"></i> Password</label>
         <input type="password" id="node-input-password" placeholder="Password">
     </div>
+    <div class="form-row">
+        <label for="node-input-lang"><i class="fa fa-language"></i> Language</label>
+        <select type="text" id="node-input-lang" style="display: inline-block; width: 70%;" >
+            <option value="en">English</option>
+            <option value="es">Spanish</option>
+        </select>
+    </div>
 </script>
 
 <script type="text/x-red" data-help-name="watson-personality-insights">
     <p>The Personality Insights service uses linguistic analytics to infer personality and social characteristics, including Big Five, Needs, and Values, from text.</p>
     <p>The text (minimum of a hundred words) to analyse should be passed in on <b>msg.payload</b>.</p>
+    <p>You can set the source text language to be either English or Spanish.</b>.</p>
     <p>The insights will be returned as a tree on <b>msg.insights</b>.</p>
     <p>For more information about the Personality Insights service, read the <a href="https://www.ibm.com/smarterplanet/us/en/ibmwatson/developercloud/personality-insights.html">documentation</a>.</p>
 </script>
@@ -46,7 +54,8 @@
         RED.nodes.registerType('watson-personality-insights', {
             category: 'IBM Watson',
             defaults: {
-                name: {value: ""}
+                name: {value: ""},
+                lang: {value: "en"}
             },
             credentials: {
               username: {type:"text"},

@@ -39,11 +39,13 @@ module.exports = function (RED) {
 
     this.on('input', function (msg) {
       if (!msg.payload) {
-        node.error('Missing property: msg.payload');
+        var message = 'Missing property: msg.payload';
+        node.error(message, msg)
         return;
       }
       if (msg.payload.split(' ').length < 100) {
-        node.error('Personality insights requires a minimum of one hundred words.');
+        var message = 'Personality insights requires a minimum of one hundred words.';
+        node.error(message, msg);
         return;
       }
 
@@ -51,7 +53,8 @@ module.exports = function (RED) {
       password = password || this.credentials.password;
 
       if (!username || !password) {
-        node.error('Missing Personality Insights service credentials');
+        var message = 'Missing Personality Insights service credentials';
+        node.error(message, msg);
         return;
       }
  
@@ -63,9 +66,11 @@ module.exports = function (RED) {
         version: 'v2'
       });
 
-      personality_insights.profile({text: msg.payload }, function (err, response) {
+      node.status({fill:"blue", shape:"dot", text:"requesting"});
+      personality_insights.profile({text: msg.payload, language: config.lang}, function (err, response) {
+        node.status({})
         if (err) {
-          node.error(err);
+          node.error(err, msg);
         } else{
           msg.insights = response.tree;
         }

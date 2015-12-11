@@ -42,7 +42,8 @@ module.exports = function (RED) {
 
     this.on('input', function (msg) {
       if (!msg.payload) {
-        node.error('Missing property: msg.payload');
+        var message = 'Missing property: msg.payload';
+        node.error(message, msg)
         return;
       }
 
@@ -50,27 +51,30 @@ module.exports = function (RED) {
       password = password || this.credentials.password;
 
       if (!username || !password) {
-        node.error('Missing Speech To Text service credentials');
+        var message = 'Missing Speech To Text service credentials';
+        node.error(message, msg)
         return;
       }
 
       if (!msg.payload instanceof Buffer || !typeof msg.payload === 'string') {
-        node.error('Invalid property: msg.payload, must be a URL or a Buffer.');
+        var message = 'Invalid property: msg.payload, must be a URL or a Buffer.';
+        node.error(message, msg)
         return;
       }
 
       if (!config.lang) {
-        node.error('Missing audio language configuration, unable to process speech.');
+        var message = 'Missing audio language configuration, unable to process speech.';
+        node.error(message, msg)
         return;
       }
 
       if (!config.band) {
-        node.error('Missing audio band configuration, unable to process speech.');
+        var message = 'Missing audio band configuration, unable to process speech.';
+        node.error(message, msg)
         return;
       }
 
       var model = config.lang + '_' + config.band;
-      var min_sample_rate = (config.band === 'NarrowbandModel' ? 8000 : 16000);
 
       var speech_to_text = watson.speech_to_text({
         username: username,
@@ -79,21 +83,26 @@ module.exports = function (RED) {
         url: 'https://stream.watsonplatform.net/speech-to-text/api'
       });
 
-      var s2t = function (audio, sample_rate, cb) {
-        if (sample_rate < min_sample_rate) {
-          node.error('Audio sample rate, ' + sample_rate + 'Hz, lower than minimum required sample rate for this model, ' + min_sample_rate + 'Hz.');
+      var s2t = function (audio, format, cb) {
+        if (format !== 'wav' && format !== 'flac' && format !== 'ogg') {
+          var message = 'Audio format (' + format + ') not supported, must be encoded as WAV, FLAC or OGG.';
+          node.error(message, msg)
           return;
         }
+
+        if (format === 'ogg') format += ';codecs=opus';
 
         var params = {
           audio: audio,
           model: model,
-          content_type: 'audio/wav'
+          content_type: 'audio/' + format 
         };
 
+        node.status({fill:"blue", shape:"dot", text:"requesting"});
         speech_to_text.recognize(params, function (err, res) {
+          node.status({})
           if (err) {
-            node.error(err);
+            node.error(err, msg);
           } else {
             msg.transcription = '';
             if (res.results.length && res.results[0].alternatives.length) {
@@ -104,34 +113,12 @@ module.exports = function (RED) {
           node.send(msg);
           if (cb) cb();
         });
-      }
-
-      var is_wav_file = function (audioBuffer) {
-        return (fileType(audioBuffer).ext === 'wav')
-      }
-
-      var wav_sample_rate = function (buffer) {
-        if (!is_wav_file(buffer)) {
-          node.error('Invalid filetype for msg.payload contents, must be a WAV file.')
-          return null;
-        }
-
-        // WAV sample rate stored as 32 bit integer,
-        // 24 bytes into the file header.
-        return buffer.readInt32LE(24)
       };
-
-      var find_sample_rate = function (buffer, cb) {
-        var sample_rate = wav_sample_rate(buffer);
-        if (sample_rate) {
-          cb(sample_rate)
-        }
-      }
 
       var stream_buffer = function (file, contents, cb) {
         fs.writeFile(file, contents, function (err) {
           if (err) throw err;
-          find_sample_rate(contents, cb)
+          cb(fileType(contents).ext)
         });
       };
 
@@ -140,7 +127,7 @@ module.exports = function (RED) {
         wstream.on('finish', function () {
           fs.readFile(file, function (err, buf) {
             if (err) console.error(err);
-            find_sample_rate(buf, cb)
+            cb(fileType(buf).ext)
           })
         });
 
@@ -148,13 +135,13 @@ module.exports = function (RED) {
         .pipe(wstream);
       };
 
-      temp.open({suffix: '.wav'}, function (err, info) {
+      temp.open({suffix: '.audio'}, function (err, info) {
         if (err) throw err;
 
         var stream_payload = (typeof msg.payload === 'string') ? stream_url : stream_buffer;
 
-        stream_payload(info.path, msg.payload, function (sample_rate) {
-          s2t(fs.createReadStream(info.path), sample_rate, temp.cleanup);
+        stream_payload(info.path, msg.payload, function (format) {
+          s2t(fs.createReadStream(info.path), format, temp.cleanup);
         });
       });
     });

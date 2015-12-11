@@ -38,6 +38,8 @@
             <option value="en-US">English (US)</option>
             <option value="es-ES">Spanish</option>
             <option value="ja-JP">Japanese</option>
+            <option value="pt-BR">Brazilian Portuguese</option>
+            <option value="zh-CN">Mandarin Chinese</option>
         </select>
     </div>
     <div class="form-row">
@@ -59,8 +61,8 @@
         <li><b>String</b> URL to audio</li>
         <li><b>Buffer</b> Raw Audio Bytes</li>
     </ul>
-    <p>Audio must be a <b>WAV encoded file</b>.</p>
-    <p>Speech To Text supports decoding speech from three languages: <b>English, Spanish and Japanese</b>. This option can be modified in the configuration panel.</p>
+    <p>Audio must be a <b>WAV, FLAC or OGG encoded file</b>.</p>
+    <p>Speech To Text supports decoding speech from three languages: <b>English, Spanish, Japanese, Brazilian Portuguese and Mandarin Chinese</b>. This option can be modified in the configuration panel.</p>
     <p>Along with the language, you can also configure the source audio quality. The service supports two different source sampling rates, <b>Narrowband (8KHz) and Broadband (16Khz)</b>. Higher sample rates will be downsampled automatically but the is not true in reverse.</p>
     <p>The returned audio transcription will be returned on <b>msg.transcription</b>.</p>
     <p>For more information about the Speech To Text service, read the <a href="https://www.ibm.com/smarterplanet/us/en/ibmwatson/developercloud/speech-to-text.html">documentation</a>.</p>
