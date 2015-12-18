@@ -1,6 +1,6 @@
 {
     "name": "node-red-bluemix-nodes",
-    "version": "0.2.13",
+    "version": "0.2.14",
     "description": "A collection of extra Node-RED nodes for IBM Bluemix.",
     "dependencies": {
         "alchemy-api": "^1.3.0",
