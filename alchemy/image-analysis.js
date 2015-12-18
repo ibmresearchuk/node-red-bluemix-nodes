@@ -45,14 +45,16 @@ module.exports = function (RED) {
 
     this.on('input', function (msg) {
       if (!msg.payload) {
-        node.error('Missing property: msg.payload');
+        var message = 'Missing property: msg.payload';
+        node.error(message, msg);
         return;
       }
 
       apikey = apikey || this.credentials.apikey;
 
       if (!apikey) {
-        node.error('Missing Alchemy API service credentials');
+        var message ='Missing Alchemy API service credentials'; 
+        node.error(message, msg);
         return;
       }
 
@@ -62,7 +64,8 @@ module.exports = function (RED) {
 
       alchemy[feature](msg.payload, msg.alchemy_options || {}, function (err, response) {
         if (err || response.status === "ERROR") { 
-          node.error('Alchemy API request error: ' + (err ? err : response.statusInfo)); 
+          var message = 'Alchemy API request error: ' + (err ? err : response.statusInfo); 
+          node.error(message, msg);
           return;
         }
 

@@ -53,14 +53,16 @@ module.exports = function (RED) {
 
     this.on('input', function (msg) {
       if (!msg.payload) {
-        node.error('Missing property: msg.payload');
+        var message = 'Missing property: msg.payload';
+        node.error(message, msg);
         return;
       }
 
       apikey = apikey || this.credentials.apikey;
 
       if (!apikey) {
-        node.error('Missing Alchemy API service credentials');
+        var message = 'Missing Alchemy API service credentials';
+        node.error(message, msg);
         return;
       }
 
@@ -71,13 +73,15 @@ module.exports = function (RED) {
       });
 
       if (!enabled_features.length) {
-        node.error('AlchemyAPI node must have at least one selected feature.');
+        var message = 'AlchemyAPI node must have at least one selected feature.';
+        node.error(message, msg);
         return;
       }
 
       alchemy.combined(msg.payload, enabled_features, msg.alchemy_options || {}, function (err, response) {
         if (err || response.status === 'ERROR') { 
-          node.error('Alchemy API request error: ' + (err ? err : response.statusInfo)); 
+          var message = 'Alchemy API request error: ' + (err ? err : response.statusInfo);
+          node.error(message, msg);
           return;
         }
 
