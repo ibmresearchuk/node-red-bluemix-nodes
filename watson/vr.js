@@ -41,12 +41,14 @@ module.exports = function(RED) {
 
       this.on('input', function(msg) {
         if (!msg.payload) {
-          node.error('Missing property: msg.payload');
+          var message = 'Missing property: msg.payload';
+          node.error(message, msg);
           return;
         }
 
         if (!msg.payload instanceof Buffer || !typeof msg.payload === 'string') {
-          node.error('Invalid property: msg.payload, must be a URL or a Buffer.');
+          var message = 'Invalid property: msg.payload, must be a URL or a Buffer.';
+          node.error(message, msg);
           return;
         }
 
@@ -54,7 +56,8 @@ module.exports = function(RED) {
         password = password || this.credentials.password;
 
         if (!username || !password) {
-          node.error('Missing Visual Recognition service credentials');
+          var message = 'Missing Visual Recognition service credentials';
+          node.error(message, msg)
           return;
         }
 
@@ -63,7 +66,7 @@ module.exports = function(RED) {
         var visual_recognition = watson.visual_recognition({
           username: username,
           password: password,
-          version: 'v1'
+          version: 'v1-beta'
         });
 
         var file_extension = function (file) {
@@ -82,9 +85,11 @@ module.exports = function(RED) {
         }
 
         var recognize = function (image, cb) {
+          node.status({fill:"blue", shape:"dot", text:"requesting"});
           visual_recognition.recognize({image_file: image}, function(err, res) {
+            node.status({})
             if (err) {
-              console.log(err);
+              node.error(err, msg);
             } else {
               msg.labels = res.images && res.images[0].labels;
             }

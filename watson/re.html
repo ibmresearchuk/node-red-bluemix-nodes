@@ -35,7 +35,8 @@
     <div class="form-row">
         <label for="node-input-dataset"><i class="fa fa-comments-o"></i> Dataset</label>
         <select type="text" id="node-input-dataset" style="display: inline-block; vertical-align:middle; width: 70%;">
-            <option value="">set dataset code in msg.dataset</option>
+            <option value="ie-en-news">English</option>
+            <option value="ie-es-news">Spanish</option>
         </select>
     </div>
     <div class="form-tips" id="node-missing-service-warning" style="display: none"><i class="fa fa-warning"></i><b> Warning:</b> There is no Relationship Extraction service connected
@@ -60,7 +61,7 @@
             category: 'IBM Watson',
             defaults: {
                 name: {value: ""},
-                dataset: {value: ""}
+                dataset: {value: "ie-en-news"}
             },
             credentials: {
               username: {type:"text"},

@@ -11,7 +11,7 @@
         "request": "~2.53.0",
         "temp": "^0.8.3",
         "twilio": "~1.6.0",
-        "watson-developer-cloud": "^0.9.23",
+        "watson-developer-cloud": "^1.0.6",
         "when": "~3.x"
     },
     "repository": {
@@ -40,7 +40,7 @@
             "mqlight": "mqlight/mqlight.js",
             "mongodb": "mongo/66-mongodb-cf.js",
             "twilio": "twilio/56-twilio-cf.js",
-            "watson-question-answer": "watson/qa.js",
+            "watson-natural-language-classifier": "watson/nlc.js",
             "watson-language-identification": "watson/lid.js",
             "watson-translate": "watson/smt.js",
             "watson-personality-insights": "watson/pi.js",

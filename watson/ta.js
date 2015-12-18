@@ -39,7 +39,8 @@ module.exports = function(RED) {
 
       this.on('input', function(msg) {
         if (!msg.payload) {
-          node.error('Missing property: msg.payload');
+          var message = 'Missing property: msg.payload';
+          node.error(message, msg);
           return;
         }
 
@@ -47,7 +48,8 @@ module.exports = function(RED) {
         password = password || this.credentials.password;
 
         if (!username || !password) {
-          node.error('Missing Tradeoff Analytics service credentials');
+          var message = 'Missing Tradeoff Analytics service credentials';
+          node.error(message, msg);
           return;
         }
 
@@ -59,13 +61,15 @@ module.exports = function(RED) {
           version: 'v1'
         });
 
+        node.status({fill:"blue", shape:"dot", text:"requesting"});
         tradeoff_analytics.dilemmas({
           subject: msg.payload, 
           columns: msg.columns, 
           options: msg.options 
         }, function (err, response) {
+          node.status({});
           if (err)
-            node.error(err);
+            node.error(err, msg);
           else 
             msg.resolution = response.resolution;
 

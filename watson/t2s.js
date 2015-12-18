@@ -36,7 +36,8 @@ module.exports = function(RED) {
 
     this.on('input', function(msg) {
       if (!msg.payload) {
-        node.error('Missing property: msg.payload');
+        var message = 'Missing property: msg.payload';
+        node.error(message, msg);
         return;
       }
 
@@ -44,7 +45,8 @@ module.exports = function(RED) {
       password = password || this.credentials.password;
 
       if (!username || !password) {
-        node.error('Missing Speech To Text service credentials');
+        var message = 'Missing Speech To Text service credentials';
+        node.error(message, msg);
         return;
       }
 
@@ -59,13 +61,15 @@ module.exports = function(RED) {
 
       var params = {
         text: msg.payload,
-        voice: config.voice,
-        accept: 'audio/wav'
+        voice: msg.voice || config.voice,
+        accept: config.format
       };
 
+      node.status({fill:"blue", shape:"dot", text:"requesting"});
       text_to_speech.synthesize(params, function (err, body, response) {
+        node.status({})
         if (err) {
-          node.error(err);
+          node.error(err, msg);
         } else {
           msg.speech = body;
         }

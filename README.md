@@ -25,18 +25,16 @@ The current release contains the following nodes:
 
 - Language Identification
     - Detects the language used in text
-- Message Resonance
-    - Analyzes content and scores how well it is likely to be received by a target audience
+- Natural Language Classifier
+    - Uses machine learning algorithms to return the top matching predefined classes for short text inputs.
 - Personality Insights
     - Use linguistic analytics to infer cognitive and social characteristics from text
-- Machine Translation
-    - Translates text from one language to another
-- Question Answer
-    - Receive responses to input questions
 - Relationship Extraction
     - Extract entities and their relationships from unstructured text
 - Speech To Text
     - Convert audio containing speech to text
+- Language Translation
+    - Translates text from one language to another
 - Text To Speech
     - Convert text to audio speech
 - Tradeoff Analytics

@@ -40,7 +40,8 @@ module.exports = function(RED) {
 
     this.on('input', function(msg) {
       if (!msg.payload) {
-        node.error('Missing property: msg.payload');
+        var message = 'Missing property: msg.payload';
+        node.error(message, msg)
         return;
       }
 
@@ -66,7 +67,8 @@ module.exports = function(RED) {
       password = password || this.credentials.password;
 
       if (!username || !password) {
-        node.error('Missing Language Translation service credentials');
+        var message = 'Missing Language Translation service credentials';
+        node.error(message, msg)
         return;
       }
 
@@ -80,10 +82,12 @@ module.exports = function(RED) {
         + config.destlang 
         + (config.domain === 'news' ? '' : '-conversational');
 
+      node.status({fill:"blue", shape:"dot", text:"requesting"});
       language_translation.translate({
         text: msg.payload, model_id: model_id},
         function (err, response) {
-          if (err) { node.error(err); }
+          node.status({})
+          if (err) { node.error(err, msg); }
           else { msg.payload = response.translations[0].translation; }
           node.send(msg);
         });
