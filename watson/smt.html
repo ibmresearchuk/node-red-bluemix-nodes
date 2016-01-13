@@ -65,8 +65,7 @@
     <p>The Language Translation service enables you to translate text from one language to another.</p>
     <p>The text to translate should be passed in on <b>msg.payload</b>.</p>
     <p>The translated text will be returned on <b>msg.payload</b>.</p>
-    <p>You can set the translation language code in <b>msg.lang</b>. If another language is set in the node then <b>msg.lang</b> will be overridden.</p>
-    <p>The translation language code should be in the form <i>'mt-from-to'</i> where <i>from</i> and <i>to</i> are language codes, eg. enus. If the translation language code passed in is invalid, the message will not be translated.</p>
+    <p>Source and destination language parameters can be configured through the editor panel or set dynamically using the language codes in the following properties, <b>msg.srclang</b> and <b>msg.destlang</b>. Please see the documentation linked below for the currently supported source and destination language codes.</p>
     <p>For more information about the Language Translation service, read the <a href="http://www.ibm.com/smarterplanet/us/en/ibmwatson/developercloud/language-translation.html">documentation</a>.</p>
 </script>
 
