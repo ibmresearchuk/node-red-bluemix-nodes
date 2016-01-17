@@ -1,5 +1,5 @@
 <!--
-  Copyright 2013,2014 IBM Corp.
+  Copyright 2013,2016 IBM Corp.
 
   Licensed under the Apache License, Version 2.0 (the "License");
   you may not use this file except in compliance with the License.
@@ -178,6 +178,83 @@
             };
             updateOptions();
             $("#node-input-beserver").change(updateOptions);
+        }
+    });
+</script>
+
+
+<script type="text/x-red" data-template-name="tcp request">
+    <div class="form-row">
+        <label for="node-input-server"><i class="fa fa-globe"></i> Server</label>
+        <input type="text" id="node-input-server" placeholder="ip.address" style="width:45%">
+        &nbsp;port <input type="text" id="node-input-port" style="width:60px">
+    </div>
+    <div class="form-row">
+        <label for="node-input-out"><i class="fa fa-sign-out"></i> Return</label>
+        <select type="text" id="node-input-out" style="width:56%;">
+            <option value="time">after a fixed timeout of</option>
+            <option value="char">when character received is</option>
+            <option value="count">a fixed number of chars</option>
+            <option value="sit">never - keep connection open</option>
+        </select>
+        <input type="text" id="node-input-splitc"  style="width:50px;">
+        <span id="node-units"></span>
+    </div>
+    <div class="form-row">
+        <label for="node-input-name"><i class="fa fa-tag"></i> Name</span></label>
+        <input type="text" id="node-input-name" placeholder="Name">
+    </div>
+    <script>
+        var previous = null;
+        $("#node-input-out").on('focus', function () { previous = this.value; }).change(function() {
+            if (previous == null) { previous = $("#node-input-out").val(); }
+            if ($("#node-input-out").val() == "char") {
+                if (previous != "char") $("#node-input-splitc").val("\\n");
+                $("#node-units").text("");
+            }
+            else if ($("#node-input-out").val() == "time") {
+                if (previous != "time") $("#node-input-splitc").val("0");
+                $("#node-units").text("ms");
+            }
+            else if ($("#node-input-out").val() == "count") {
+                if (previous != "count") $("#node-input-splitc").val("12");
+                $("#node-units").text("chars");
+            }
+            else {
+                if (previous != "sit") $("#node-input-splitc").val("0");
+                $("#node-units").text("");
+            }
+        });
+</script>
+
+<script type="text/x-red" data-help-name="tcp request">
+    <p>A simple TCP request node - sends the <b>msg.payload</b> to a server tcp port and expects a response.</p>
+    <p>Connects, sends the "request", reads the "response". It can either count a number of
+    returned characters into a fixed buffer, match a specified character before returning,
+    wait a fixed timeout from first reply and then return, or just sit and wait for data.</p>
+    <p>The response will be output in <b>msg.payload</b> as a buffer, so you may want to .toString() it.</p>
+    <p>If you leave tcp host or port blank they must be set by using the <b>msg.host</b> and <b>msg.port</b> properties.</p>
+</script>
+
+<script type="text/javascript">
+    RED.nodes.registerType('tcp request',{
+        category: 'function',
+        color:"Silver",
+        defaults: {
+            server: {value:""},
+            port: {value:"",validate:RED.validators.regex(/^(\d*|)$/)},
+            out: {value:"time",required:true},
+            splitc: {value:"0",required:true},
+            name: {value:""}
+        },
+        inputs:1,
+        outputs:1,
+        icon: "bridge-dash.png",
+        label: function() {
+            return this.name || "tcp:"+(this.server?this.server+":":"")+this.port;
+        },
+        labelStyle: function() {
+            return this.name?"node_label_italic":"";
         }
     });
 </script>

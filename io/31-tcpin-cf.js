@@ -1,5 +1,5 @@
 /**
- * Copyright 2013,2014 IBM Corp.
+ * Copyright 2013,2016 IBM Corp.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -177,7 +177,6 @@ module.exports = function(RED) {
                 }
             });
         }
-
     }
     RED.nodes.registerType("tcp in",TcpIn);
 
@@ -309,6 +308,151 @@ module.exports = function(RED) {
             });
         }
     }
-
     RED.nodes.registerType("tcp out",TcpOut);
+
+    function TcpGet(n) {
+        RED.nodes.createNode(this,n);
+        this.server = n.server;
+        this.port = Number(n.port);
+        this.out = n.out;
+        this.splitc = n.splitc;
+
+        if (this.out != "char") { this.splitc = Number(this.splitc); }
+        else { this.splitc = this.splitc.replace("\\n",0x0A).replace("\\r",0x0D).replace("\\t",0x09).replace("\\e",0x1B).replace("\\f",0x0C).replace("\\0",0x00); } // jshint ignore:line
+
+        var buf;
+        if (this.out == "count") { buf = new Buffer(this.splitc); }
+        else { buf = new Buffer(65536); } // set it to 64k... hopefully big enough for most TCP packets.... but only hopefully
+
+        this.connected = false;
+        var node = this;
+        var client;
+
+        this.on("input", function(msg) {
+            var i = 0;
+            if ((!Buffer.isBuffer(msg.payload)) && (typeof msg.payload !== "string")) {
+                msg.payload = msg.payload.toString();
+            }
+            if (!node.connected) {
+                client = net.Socket();
+                if (socketTimeout !== null) { client.setTimeout(socketTimeout); }
+                var host = node.server || msg.host;
+                var port = node.port || msg.port;
+
+                if (host && port) {
+                    client.connect(port, host, function() {
+                        //node.log("connected"");
+                        node.status({fill:"green",shape:"dot",text:"connected"});
+                        node.connected = true;
+                        client.write(msg.payload);
+                    });
+                }
+                else {
+                    node.warn("Host not found");
+                }
+
+                client.on('data', function(data) {
+                    if (node.out == "sit") { // if we are staying connected just send the buffer
+                        msg.payload = data;
+                        node.send(msg);
+                    }
+                    else if (node.splitc === 0) {
+                        msg.payload = data;
+                        node.send(msg);
+                    }
+                    else {
+                        for (var j = 0; j < data.length; j++ ) {
+                            if (node.out === "time")  {
+                                // do the timer thing
+                                if (node.tout) {
+                                    i += 1;
+                                    buf[i] = data[j];
+                                }
+                                else {
+                                    node.tout = setTimeout(function () {
+                                        node.tout = null;
+                                        msg.payload = new Buffer(i+1);
+                                        buf.copy(msg.payload,0,0,i+1);
+                                        node.send(msg);
+                                        if (client) { node.status({}); client.destroy(); }
+                                    }, node.splitc);
+                                    i = 0;
+                                    buf[0] = data[j];
+                                }
+                            }
+                            // count bytes into a buffer...
+                            else if (node.out == "count") {
+                                buf[i] = data[j];
+                                i += 1;
+                                if ( i >= node.splitc) {
+                                    msg.payload = new Buffer(i);
+                                    buf.copy(msg.payload,0,0,i);
+                                    node.send(msg);
+                                    if (client) { node.status({}); client.destroy(); }
+                                    i = 0;
+                                }
+                            }
+                            // look for a char
+                            else {
+                                buf[i] = data[j];
+                                i += 1;
+                                if (data[j] == node.splitc) {
+                                    msg.payload = new Buffer(i);
+                                    buf.copy(msg.payload,0,0,i);
+                                    node.send(msg);
+                                    if (client) { node.status({}); client.destroy(); }
+                                    i = 0;
+                                }
+                            }
+                        }
+                    }
+                });
+
+                client.on('end', function() {
+                    //console.log("END");
+                    node.connected = false;
+                    node.status({fill:"grey",shape:"ring",text:"disconnected"});
+                    client = null;
+                });
+
+                client.on('close', function() {
+                    //console.log("CLOSE");
+                    node.connected = false;
+                    if (node.done) { node.done(); }
+                });
+
+                client.on('error', function() {
+                    //console.log("ERROR");
+                    node.connected = false;
+                    node.status({fill:"red",shape:"ring",text:"error"});
+                    node.error("connect failed",msg);
+                    if (client) { client.destroy(); }
+                });
+
+                client.on('timeout',function() {
+                    //console.log("TIMEOUT");
+                    node.connected = false;
+                    node.status({fill:"grey",shape:"dot",text:"connect timeout"});
+                    if (client) {
+                        client.connect(port, host, function() {
+                            node.connected = true;
+                            node.status({fill:"green",shape:"dot",text:"connected"});
+                        });
+                    }
+                });
+            }
+            else { client.write(msg.payload); }
+        });
+
+        this.on("close", function(done) {
+            node.done = done;
+            if (client) {
+                buf = null;
+                client.destroy();
+            }
+            node.status({});
+            if (!node.connected) { done(); }
+        });
+    }
+    RED.nodes.registerType("tcp request",TcpGet);
 }
