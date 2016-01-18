@@ -45,19 +45,22 @@ module.exports = function(RED) {
         return;
       }
 
-      if (!config.srclang) {
+      var srclang = msg.srclang || config.srclang;
+      if (!srclang) {
         node.warn("Missing source language, message not translated");
         node.send(msg);
         return;
       }
 
-      if (!config.destlang) {
+      var destlang = msg.destlang || config.destlang;
+      if (!destlang) {
         node.warn("Missing target language, message not translated");
         node.send(msg);
         return;
       }
       
-      if (!config.domain) {
+      var domain = msg.domain || config.domain;
+      if (!domain) {
         node.warn("Missing translation domain, message not translated");
         node.send(msg);
         return;
@@ -78,9 +81,8 @@ module.exports = function(RED) {
         version: 'v2'
       });
 
-      var model_id = config.srclang + '-' 
-        + config.destlang 
-        + (config.domain === 'news' ? '' : '-conversational');
+      var model_id = srclang + '-' + destlang 
+        + (domain === 'news' ? '' : '-conversational');
 
       node.status({fill:"blue", shape:"dot", text:"requesting"});
       language_translation.translate({
