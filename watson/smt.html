@@ -84,6 +84,23 @@
               }).always(function () {
                 $('#credentials-check').hide();
               })
+            var initial_update = true;
+            $('#node-input-srclang').change(function () {
+              console.log(node)
+              var source_lang = $('#node-input-srclang').val()
+              if (source_lang === 'en') {
+                $('#node-input-destlang option[value=en]').attr('disabled','disabled')
+                $('#node-input-destlang option[value!=en]').removeAttr('disabled')
+              } else {
+                $('#node-input-destlang option[value!=en]').attr('disabled','disabled')
+                $('#node-input-destlang option[value=en]').removeAttr('disabled')
+              }
+
+              if (!initial_update) {
+                $('#node-input-destlang option[disabled!=disabled]:first').attr('selected', 'selected')
+              }
+              initial_update = false
+            })
         }
 
         RED.nodes.registerType('watson-translate',{
