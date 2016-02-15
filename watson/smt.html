@@ -63,16 +63,16 @@
 
 <script type="text/x-red" data-help-name="watson-translate">
     <p>The Language Translation service enables you to translate text from one language to another.</p>
-    <p>The text to translate should be passed in on <b>msg.payload</b>.</p>
-    <p>The translated text will be returned on <b>msg.payload</b>.</p>
-    <p>Source and destination language parameters can be configured through the editor panel or set dynamically using the language codes in the following properties, <b>msg.srclang</b> and <b>msg.destlang</b>. Please see the documentation linked below for the currently supported source and destination language codes.</p>
+    <p>The text to translate should be passed in on <code>msg.payload</code>.</p>
+    <p>The translated text will be returned on <code>msg.payload</code>.</p>
+    <p>Source and destination language parameters can be configured through the editor panel or set dynamically using
+    the language codes in the following properties, <code>msg.srclang</code> and <code>msg.destlang</code>. Please see
+    the documentation linked below for the currently supported source and destination language codes.</p>
     <p>For more information about the Language Translation service, read the <a href="http://www.ibm.com/smarterplanet/us/en/ibmwatson/developercloud/language-translation.html">documentation</a>.</p>
 </script>
 
 <script type="text/javascript">
-
     (function() {
-
         function oneditprepare() {
             var node = this;
             $.getJSON('watson-translate/vcap/')

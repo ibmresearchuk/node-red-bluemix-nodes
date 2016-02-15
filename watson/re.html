@@ -44,14 +44,16 @@
 </script>
 
 <script type="text/x-red" data-help-name="watson-relationship-extraction">
-    <p>The Relationship Extraction service intelligently finds relationships between sentence components (nouns, verbs, subjects, objects, etc.). From unstructured text, it can extract entities (such as people, locations, organizations, events), and the relationships between these entities (such as person employed-by organization, person resides-in location).</p>
-    <p>The text to analyse should be passed in on <b>msg.payload</b>.</p>
+    <p>The Relationship Extraction service intelligently finds relationships between sentence components (nouns, verbs,
+    subjects, objects, etc.). From unstructured text, it can extract entities (such as people, locations, organizations,
+    events), and the relationships between these entities (such as person employed-by organization, person resides-in location).</p>
+    <p>The text to analyse should be passed in on <code>msg.payload</code>.</p>
     <p>There are two different datasets to choose from.</p>
     <ul>
         <li><b>English News</b></li>
         <li><b>Spanish News</b></li>
     </ul>
-    <p>The relationships will be returned on <b>msg.relationships</b>.</p>
+    <p>The relationships will be returned on <code>msg.relationships</code>.</p>
     <p>For more information about the Relationship Extraction, read the <a href="https://www.ibm.com/smarterplanet/us/en/ibmwatson/developercloud/relationship-extraction.html">documentation</a>.</p>
 </script>
 
@@ -80,7 +82,7 @@
             },
             oneditprepare: function() {
               var node = this;
-              $.getJSON('watson-relationship-extraction/vcap/') 
+              $.getJSON('watson-relationship-extraction/vcap/')
                 .done(function (sids) {
                   $('.credentials').toggle(!sids);
                   if (sids) {

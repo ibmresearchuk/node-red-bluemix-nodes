@@ -49,22 +49,25 @@
             <option value="NarrowbandModel">Narrowband (>= 8Khz)</option>
         </select>
     </div>
-
-
 </script>
 
 <script type="text/x-red" data-help-name="watson-speech-to-text">
-    <p>The Speech To Text converts the human voice into the written word. This service uses machine intelligence to combine information about grammar and language structure with knowledge of the composition of the audio signal to generate a more accurate transcription</p>
-    <p>The audio file to be analysed should be passed in on <b>msg.payload</b>.</p>
-    <p>Supported msg.payload types:</b>.</p>
+    <p>The Speech To Text converts the human voice into the written word. This service uses machine intelligence to
+    combine information about grammar and language structure with knowledge of the composition of the audio signal to
+    generate a more accurate transcription</p>
+    <p>The audio file to be analysed should be passed in on <code>msg.payload</code>.</p>
+    <p>Supported <code>msg.payload</code> types:</b>.</p>
     <ul>
         <li><b>String</b> URL to audio</li>
         <li><b>Buffer</b> Raw Audio Bytes</li>
     </ul>
     <p>Audio must be a <b>WAV, FLAC or OGG encoded file</b>.</p>
-    <p>Speech To Text supports decoding speech from three languages: <b>English, Spanish, Japanese, Brazilian Portuguese and Mandarin Chinese</b>. This option can be modified in the configuration panel.</p>
-    <p>Along with the language, you can also configure the source audio quality. The service supports two different source sampling rates, <b>Narrowband (8KHz) and Broadband (16Khz)</b>. Higher sample rates will be downsampled automatically but the is not true in reverse.</p>
-    <p>The returned audio transcription will be returned on <b>msg.transcription</b>.</p>
+    <p>Speech To Text supports decoding speech from three languages: <b>English, Spanish, Japanese, Brazilian Portuguese
+    and Mandarin Chinese</b>. This option can be modified in the configuration panel.</p>
+    <p>Along with the language, you can also configure the source audio quality. The service supports two different
+    source sampling rates, <b>Narrowband (8KHz) and Broadband (16Khz)</b>. Higher sample rates will be downsampled
+    automatically but the is not true in reverse.</p>
+    <p>The returned audio transcription will be returned on <code>msg.transcription</code>.</p>
     <p>For more information about the Speech To Text service, read the <a href="https://www.ibm.com/smarterplanet/us/en/ibmwatson/developercloud/speech-to-text.html">documentation</a>.</p>
 </script>
 

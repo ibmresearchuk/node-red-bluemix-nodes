@@ -58,18 +58,18 @@
 
 <script type="text/x-red" data-help-name="watson-natural-language-classifier">
     <p>The Natural Language Classifier service uses machine learning algorithms to return the top matching predefined classes for short text inputs.</p>
-    <p>The node can either train new classifiers or match text against existing classifiers. 
+    <p>The node can either train new classifiers or match text against existing classifiers.
        Use the drop-down menu in the node configuration window to select the mode.</p>
     <p></p>
     <p><b>Classifier Mode</b>.</p>
     <p>Set the classifier id in the node configuration window.</p>
-    <p>The text to classify should be passed in on <b>msg.payload</b>.</p>
-    <p>The returned classification and confidence values will be returned on <b>msg.payload</b>.</p>
+    <p>The text to classify should be passed in on <code>msg.payload</code>.</p>
+    <p>The returned classification and confidence values will be returned on <code>msg.payload</code>.</p>
     <p></p>
     <p><b>Training Mode</b>.</p>
     <p>Set the training data language in the node configuration window.</p>
-    <p>The CSV training data should be passed in on <b>msg.payload</b> as a String or String Array. For more details on the training data format, see this <a href="https://www.ibm.com/smarterplanet/us/en/ibmwatson/developercloud/doc/nl-classifier/data_format.shtml">link</a></p>
-    <p>The returned classification training status will be returned on <b>msg.payload</b>.</p>
+    <p>The CSV training data should be passed in on <code>msg.payload</code> as a String or String Array. For more details on the training data format, see this <a href="https://www.ibm.com/smarterplanet/us/en/ibmwatson/developercloud/doc/nl-classifier/data_format.shtml">link</a></p>
+    <p>The returned classification training status will be returned on <code>msg.payload</code>.</p>
     <p>For more information about the Natural Language Classifier service, read the <a href="https://www.ibm.com/smarterplanet/us/en/ibmwatson/developercloud/natural-language-classifier.html">documentation</a>.</p>
 </script>
 
@@ -104,8 +104,7 @@
                 $('.form-row.mode.' + mode).show();
                 $('.form-row.mode:not(.' + mode + ')').hide();
               })
-
-                $.getJSON('watson-natural-language-classifier/vcap/')
+              $.getJSON('watson-natural-language-classifier/vcap/')
                 .done(function (service) {
                   $('.credentials').toggle(!service);
                 })
