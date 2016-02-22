@@ -1,0 +1,110 @@
+<!--
+  Copyright 2015 IBM Corp.
+
+  Licensed under the Apache License, Version 2.0 (the "License");
+  you may not use this file except in compliance with the License.
+  You may obtain a copy of the License at
+
+  http://www.apache.org/licenses/LICENSE-2.0
+
+  Unless required by applicable law or agreed to in writing, software
+  distributed under the License is distributed on an "AS IS" BASIS,
+  WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+  See the License for the specific language governing permissions and
+  limitations under the License.
+-->
+
+<script type="text/x-red" data-template-name="weather_insights">
+    <div id="credentials-check" class="form-row">
+        <div class="form-tips">
+            <i class="fa fa-question-circle"></i><b> Please wait: </b> Checking for bound service credentials...
+        </div>
+    </div>
+    <div class="form-row">
+        <label for="node-input-name"><i class="fa fa-tag"></i> Name</label>
+        <input type="text" id="node-input-name" placeholder="Name">
+    </div>
+    <div class="form-row credentials" style="display: none;">
+        <label for="node-input-username"><i class="fa fa-user"></i> Username</label>
+        <input type="text" id="node-input-username" placeholder="Username">
+    </div>
+    <div class="form-row credentials" style="display: none;">
+        <label for="node-input-password"><i class="fa fa-key"></i> Password</label>
+        <input type="password" id="node-input-password" placeholder="Password">
+    </div>
+    <div class="form-row">
+        <label for="node-input-service"><i class="fa fa-question"></i> Service</label>
+        <select type="text" id="node-input-service" style="display: inline-block; width: 70%;" >
+            <option value="/api/weather/v2/forecast/daily/10day">Daily Forecase (10 Days)</option>
+            <option value="/api/weather/v2/forecast/hourly/24hour">Hourly Forecast (24 Hours)</option>
+            <option value="/api/weather/v2/observations/current">Current Observations</option>
+            <option value="/api/weather/v2/observations/timeseries/24hour">Historic Observations (24 Hours)</option>
+        </select>
+    </div>
+    <div class="form-row">
+        <label for="node-input-geocode"><i class="fa fa-tag"></i> Location</label>
+        <input type="text" id="node-input-geocode" placeholder="latitute,longitude">
+    </div>
+    <div class="form-row">
+        <label for="node-input-units"><i class="fa fa-question"></i> Units</label>
+        <select type="text" id="node-input-units" style="display: inline-block; width: 70%;" >
+            <option value="m">Metric</option>
+            <option value="e">Imperial (English)</option>
+            <option value="h">Hybrid</option>
+        </select>
+    </div>
+    <div class="form-row">
+        <label for="node-input-language"><i class="fa fa-question"></i> Language</label>
+        <input type="text" id="node-input-language" placeholder="Language Code">
+    </div>
+ 
+</script>
+
+<script type="text/x-red" data-help-name="weather_insights">
+    <p>The Weather Insights service allows you access historical and real-time weather data from The Weather Company. You can retrieve weather data for an area specified by a geolocation. The data allows you to forecast, detect, and visualize disruptive weather events</p>
+    <p>The forecast service to query must be set on the editor panel to choose from forecasts (hourly and daily) or observations (current or 24 hours).</p>
+    <p>The geo-location to retrieve results for can be set in the editor panel or at runtime through <b>msg.payload</b>. This msg.payload value must be a valid comma-delimited latitude and longitude string, e.g. 34.53,84.50. The service also supports the <b>msg.location</b> parameter with lat and lon attributes.</p>
+    <p>The results will be returned on <b>msg.forecasts, msg.observation or msg.observations</b> depending on the service.</p>
+    <p>For more information about Weather Insights service, read the <a href="https://www.ng.bluemix.net/docs/services/Weather/index.html">documentation</a>.</p>
+</script>
+
+<script type="text/javascript">
+    (function() {
+        RED.nodes.registerType('weather_insights', {
+            category: 'weather',
+            defaults: {
+                name: {value: ""},
+                service: {value: "/api/weather/v2/forecast/daily/10day"},
+                geocode: {value: ""},
+                units: {value: "m"},
+                language: {value: "en-US"}
+            },
+            credentials: {
+              username: {type:"text"},
+              password: {type:"password"}
+            },
+            color: "rgb(192, 222, 237)",
+            inputs: 1,
+            outputs: 1,
+            icon: "weather.png",
+            paletteLabel: "weather insights",
+            label: function() {
+                return this.name || "weather insights";
+            },
+            labelStyle: function() {
+                return this.name ? "node_label_italic" : "";
+            },
+            oneditprepare: function() {
+                $.getJSON('weather_insights/vcap/')
+                  .done(function (service) {
+                    $('.credentials').toggle(!service);
+                  })
+                  .fail(function () {
+                    $('.credentials').show();
+                  }).always(function () {
+                    $('#credentials-check').hide();
+                  })
+            }
+        });
+    })();
+</script>
