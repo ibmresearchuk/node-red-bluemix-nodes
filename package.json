@@ -11,7 +11,7 @@
         "request": "~2.53.0",
         "temp": "^0.8.3",
         "twilio": "~1.6.0",
-        "watson-developer-cloud": "^1.0.6",
+        "watson-developer-cloud": "^1.2.4",
         "when": "~3.x"
     },
     "repository": {
