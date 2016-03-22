@@ -48,7 +48,9 @@
             "watson-speech-to-text": "watson/s2t.js",
             "watson-text-to-speech": "watson/t2s.js",
             "watson-tradeoff-analytics": "watson/ta.js",
-            "watson-visual-recognition": "watson/vr.js"
+            "watson-tone-analyzer": "watson/tone_analyzer.js",
+            "watson-visual-recognition": "watson/vr.js",
+            "weather": "weather/weather_insights.js"
         }
     }
 }
