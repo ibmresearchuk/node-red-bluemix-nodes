@@ -1,7 +1,7 @@
 Node-RED Nodes for IBM Bluemix
 ==============================
 
-A collection of nodes to be used with [Bluemix](https://ace.ng.bluemix.net/) boilerplates.
+A collection of nodes to be used with Node-RED in [IBM Bluemix](http://bluemix.net/).
 
 # Nodes
 
@@ -20,37 +20,11 @@ The current release contains the following nodes:
     - Perform find, count and aggregate operations
 - Twilio
     - Sends an SMS message using the Twilio service
+- Weather
+    - Access historical and real-time weather data from The Weather Company
 
-### Watson nodes:
-
-- Language Identification
-    - Detects the language used in text
-- Natural Language Classifier
-    - Uses machine learning algorithms to return the top matching predefined classes for short text inputs.
-- Personality Insights
-    - Use linguistic analytics to infer cognitive and social characteristics from text
-- Relationship Extraction
-    - Extract entities and their relationships from unstructured text
-- Speech To Text
-    - Convert audio containing speech to text
-- Language Translation
-    - Translates text from one language to another
-- Text To Speech
-    - Convert text to audio speech
-- Tradeoff Analytics
-    - Optimize decisions balance between multiple conflicting objectives.
-- Visual Recognition
-    - Analyze visual appearance of images to understand their contents
-
-### Alchemy:
-
-- Feature Extract 
-    - Analyse a single piece of text content (either public URL, HTML or raw text)
-      to extract multiple AlchemyAPI detected features, e.g. entities, keywords,
-      sentiment.
-- Image Analysis
-    - Upload an image to detect either faces, URL text or
-      content present in the image.
+Prior to version 1.0.1, this module also included nodes for the IBM Watson and Alchemy
+services. They have now been moved to [node-red-node-watson](http://flows.nodered.org/node/node-red-node-watson).
 
 ### Contributing
 
@@ -61,4 +35,4 @@ before doing so.
 
 ### Copyright and license
 
-Copyright 2014, 2015 IBM Corp. under [the Apache 2.0 license](LICENSE).
+Copyright 2014, 2016 IBM Corp. under [the Apache 2.0 license](LICENSE).
