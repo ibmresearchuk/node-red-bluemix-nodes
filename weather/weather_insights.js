@@ -18,12 +18,17 @@ module.exports = function(RED) {
     var cfenv = require('cfenv');
     var services = cfenv.getAppEnv().services;
     var username, password, host = 'https://twcservice.mybluemix.net';
-    var service = cfenv.getAppEnv().getServiceCreds(/insights for weather/i);
+    var service;
+    for (var i in services) {
+        if (i.match(/^(weatherinsights)/i)) {
+            service = services[i][0];
+        }
+    }
 
     if (service) {
-        username = service.username;
-        password = service.password;
-        host = 'https://' + service.host;
+        username = service.credentials.username;
+        password = service.credentials.password;
+        host = 'https://' + service.credentials.host;
     }
 
     RED.httpAdmin.get('/weather_insights/vcap', function(req, res) {
