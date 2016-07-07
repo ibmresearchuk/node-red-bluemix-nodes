@@ -4,7 +4,7 @@
     "description": "A collection of extra Node-RED nodes for IBM Bluemix.",
     "dependencies": {
         "cfenv": "~1.0.0",
-        "mongodb": "~1.4.x",
+        "mongodb": ">=1.4.x",
         "mqlight": ">=1.0.2014091000",
         "request": "~2.53.0",
         "twilio": "~1.6.0",
