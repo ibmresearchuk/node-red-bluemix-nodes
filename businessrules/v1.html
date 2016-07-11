@@ -16,19 +16,22 @@
 <script type="text/x-red" data-template-name="business-rules">
     <div class="form-row">
         <label for="node-input-service"><i class="fa fa-tag"></i> Service</label>
-        <select type="text" id="node-input-service" style="display: inline-block; vertical-align:middle; width: 70%;">
+        <select type="text" id="node-input-service" style="display: inline-block; vertical-align:middle; width: 72%;">
         	<option value="">Select one of the Business Rules services bound to your Node-RED</option>
         </select>
     </div>
+    
     <div class="form-row">
-        <label for="node-input-ruleset"><i class="fa fa-comments-o"></i> Decision Service</label>
-        <input type="text" id="node-input-ruleset" placeholder="Ruleset Path">
-    </div>
-    <div class="form-row">
-        <label for="node-input-rulesets"><i class="fa fa-comments-o"></i> Available Decision Services</label>
-        <select type="text" id="node-input-rulesets" style="display: inline-block; vertical-align:middle; width: 70%;">
+        <label for="node-input-rulesets"><i class="fa fa-comments-o"></i> Rulesets </label>
+        <select type="text" id="node-input-rulesets" style="display: inline-block; vertical-align:middle; width: 72%;">
         </select>
     </div>
+
+    <div class="form-row">
+        <label for="node-input-ruleset"><i class="fa fa-comments-o"></i> Selected </label>
+        <input type="text" id="node-input-ruleset" placeholder="Ruleset Path" readonly >
+    </div>
+
     <div class="form-tips" id="node-missing-service-warning" style="display: none"><i class="fa fa-warning"></i><b> Warning:</b> There is no Business Rules service connected
     </div>
 
