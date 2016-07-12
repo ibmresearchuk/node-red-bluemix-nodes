@@ -24,13 +24,6 @@ module.exports = function(RED) {
     	parseXMLString = require('xml2js').parseString,
     	isDev = false;
 
-    /*if (isDev==true) {
-    	console.log('Development Mode');
-    	vcap = {"businessrules":[ {"credentials":{"executionAdminRestUrl":"https://brsv2-78b76b87.ng.bluemix.net/res/apiauth","executionAdminUrl":"https://brsv2-78b76b87.ng.bluemix.net/res","executionRestUrl":"https://brsv2-78b76b87.ng.bluemix.net/DecisionService/rest","executionSoapUrl":"https://brsv2-78b76b87.ng.bluemix.net/DecisionService/ws","password":"1h82jpoybyr7c","user":"resAdmin"},"label":"businessrules","name":"Business-Rules-4-Node-RED","plan":"standard","tags":["web_and_app","ibm_created","ibm_dedicated_public"]}, 
-    		                      {"credentials":{"executionAdminRestUrl":"https://brsv2-78b76b87.ng.bluemix.net/res/apiauth","executionAdminUrl":"https://brsv2-78b76b87.ng.bluemix.net/res","executionRestUrl":"https://brsv2-78b76b87.ng.bluemix.net/DecisionService/rest","executionSoapUrl":"https://brsv2-78b76b87.ng.bluemix.net/DecisionService/ws","password":"1h82jpoybyr7c","user":"resAdmin"},"label":"businessrules","name":"Business-Rules-4-Node-RED-BIS","plan":"standard","tags":["web_and_app","ibm_created","ibm_dedicated_public"]}]};
-    	console.log('vcap',vcap);
-    }*/
-
     services = vcap["businessrules"]||[];
     serviceList = services.map(function(s) { return s.name; });
 
@@ -139,7 +132,6 @@ module.exports = function(RED) {
 	function isXMLString(xml) {
 		var b = true;
         var xmlDoc = parseXMLString(xml, function (err, result) {
-        	//console.log('parseXMLString', err, result);
         	if (err) {
         		console.log('isXMLString error:', err);
         		b=false;
@@ -183,10 +175,6 @@ module.exports = function(RED) {
 
 
 	function verifyPayload(node, msg) {
-		//var isXmlPayload= false;
-		//var isJsonPayload = false;
-
-		//console.log('payload debug', msg);
 	    if (!msg.payload) {
 	    	node.status({fill:'red', shape:'ring', text:'missing payload'});
 	    	node.error('Missing property: msg.payload', msg);
@@ -293,9 +281,7 @@ module.exports = function(RED) {
 		    	return;
 		    }
 		    b = verifyPayload(node, msg);
-		    //console.log('debug : ', b);
 		    if (!b) {
-		    	//console.log('debug xx');
 		    	return;
 		    }
 		    executeService(node,msg,config);
