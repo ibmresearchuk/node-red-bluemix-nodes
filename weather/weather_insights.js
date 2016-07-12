@@ -17,7 +17,7 @@
 module.exports = function(RED) {
     var cfenv = require('cfenv');
     var services = cfenv.getAppEnv().services;
-    var username, password, host = 'https://twcservice.mybluemix.net';
+    var username, password, host = 'https://twcservice.mybluemix.net', base_uri = '/api/weather/v1/geocode/';
     var service;
     for (var i in services) {
         if (i.match(/^(weatherinsights)/i)) {
@@ -53,11 +53,11 @@ module.exports = function(RED) {
             var geocode;
 
             if (typeof msg.payload === 'string' && msg.payload.match(lat_long_regex)) {
-                geocode = msg.payload;
+                geocode = msg.payload.replace(',', '/');
             } else if (typeof msg.location === 'object') {
-                geocode = [msg.location.lat, msg.location.lon].join(',');
+                geocode = [msg.location.lat, msg.location.lon].join('/');
             } else if (config.geocode.match(lat_long_regex)) {
-                geocode = config.geocode;
+                geocode = config.geocode.replace(',', '/');
             } else {
                 var message2 = 'Missing valid latlong parameters on either msg.payload, msg.location or node config.';
                 node.error(message2, msg);
@@ -67,7 +67,7 @@ module.exports = function(RED) {
             var request = require('request');
 
             node.status({fill:"blue", shape:"dot", text:"requesting"});
-            request({url: host + config.service, auth: {username: username, password: password}, qs: {geocode: geocode, units: config.units, language: config.language}}, function(error, response, body) {
+            request({url: host + base_uri + geocode + config.service, auth: {username: username, password: password}, qs: {units: config.units, language: config.language}}, function(error, response, body) {
                 node.status({});
                 if (!error && response.statusCode == 200) {
                     var results = JSON.parse(body);

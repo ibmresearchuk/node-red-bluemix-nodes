@@ -36,10 +36,10 @@
     <div class="form-row">
         <label for="node-input-service"><i class="fa fa-question"></i> Service</label>
         <select type="text" id="node-input-service" style="display: inline-block; width: 70%;" >
-            <option value="/api/weather/v2/forecast/daily/10day">Daily Forecast (10 Days)</option>
-            <option value="/api/weather/v2/forecast/hourly/24hour">Hourly Forecast (24 Hours)</option>
-            <option value="/api/weather/v2/observations/current">Current Observations</option>
-            <option value="/api/weather/v2/observations/timeseries/24hour">Historic Observations (24 Hours)</option>
+            <option value="/forecast/daily/10day.json">Daily Forecast (10 Days)</option>
+            <option value="/forecast/hourly/48hour.json">Hourly Forecast (48 Hours)</option>
+            <option value="/observations.json">Current Observations</option>
+            <option value="/observations/timeseries.json?hours=23">Historic Observations (24 Hours)</option>
         </select>
     </div>
     <div class="form-row">
@@ -78,7 +78,7 @@
             category: 'weather',
             defaults: {
                 name: {value: ""},
-                service: {value: "/api/weather/v2/forecast/daily/10day"},
+                service: {value: "/forecast/daily/10day.json"},
                 geocode: {value: ""},
                 units: {value: "m"},
                 language: {value: "en-US"}
