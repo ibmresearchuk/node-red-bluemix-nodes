@@ -40,10 +40,10 @@ module.exports = function(RED) {
         var node = this;
 
         this.on('input', function(msg) {
-            username = username || this.credentials.username;
-            password = password || this.credentials.password;
+            var service_username = username || this.credentials.username;
+            var service_password = password || this.credentials.password;
 
-            if (!username || !password) {
+            if (!service_username || !service_password) {
                 var message = 'Missing Weather Insights service credentials';
                 node.error(message, msg);
                 return;
@@ -67,17 +67,23 @@ module.exports = function(RED) {
             var request = require('request');
 
             node.status({fill:"blue", shape:"dot", text:"requesting"});
-            request({url: host + base_uri + geocode + config.service, auth: {username: username, password: password}, qs: {units: config.units, language: config.language}}, function(error, response, body) {
+            request({url: host + base_uri + geocode + config.service, auth: {username: service_username, password: service_password}, qs: {units: config.units, language: config.language}}, function(error, response, body) {
                 node.status({});
-                if (!error && response.statusCode == 200) {
+
+                if (error) {
+                  node.error('Weather Insights service call failed with error HTTP response.', msg);
+                } else if (response.statusCode === 401) {
+                  node.error('Weather Insights service call failure due to authentication failure.', msg);
+                } else if (response.statusCode === 404) {
+                  node.error('Weather Insights service call failed due to HTTP 404 response to API call.', msg);
+                } else if (response.statusCode !== 200) {
+                  node.error('Weather Insights service call failed due to non-200 HTTP response to API call.', msg);
+                } else {
                     var results = JSON.parse(body);
                     msg.forecasts = results.forecasts;
                     msg.observation = results.observation;
                     msg.observations = results.observations;
                     node.send(msg);
-                } else {
-                    var message3 = 'Weather Insights service call failed with error HTTP response.';
-                    node.error(message3, msg);
                 }
             });
         });
