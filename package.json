@@ -1,38 +1,38 @@
 {
-    "name": "node-red-bluemix-nodes",
-    "version": "1.0.5",
-    "description": "A collection of extra Node-RED nodes for IBM Bluemix.",
-    "dependencies": {
-        "cfenv": "~1.0.0",
-        "mongodb": "~1.4.x",
-        "mqlight": ">=1.0.2014091000",
-        "request": "~2.53.0",
-        "twilio": "~1.6.0",
-        "when": "~3.x"
-    },
-    "repository": {
-        "type": "git",
-        "url": "https://github.com/node-red/node-red-bluemix-nodes"
-    },
-    "license": "Apache-2.0",
-    "keywords": [
-        "node-red",
-        "bluemix",
-        "io",
-        "tcp",
-        "udp",
-        "mongodb",
-        "twilio",
-        "mqlight"
-    ],
-    "node-red": {
-        "nodes": {
-            "tcp": "io/31-tcpin-cf.js",
-            "udp": "io/32-udp-cf.js",
-            "mqlight": "mqlight/mqlight.js",
-            "mongodb": "mongo/66-mongodb-cf.js",
-            "twilio": "twilio/56-twilio-cf.js",
-            "weather": "weather/weather_insights.js"
-        }
+  "name": "node-red-bluemix-nodes",
+  "version": "1.1.0",
+  "description": "A collection of extra Node-RED nodes for IBM Bluemix.",
+  "dependencies": {
+    "cfenv": "~1.0.0",
+    "mongodb": "~1.4.x",
+    "mqlight": ">=1.0.2014091000",
+    "request": "~2.53.0",
+    "twilio": "~1.6.0",
+    "when": "~3.x"
+  },
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/node-red/node-red-bluemix-nodes"
+  },
+  "license": "Apache-2.0",
+  "keywords": [
+    "node-red",
+    "bluemix",
+    "io",
+    "tcp",
+    "udp",
+    "mongodb",
+    "twilio",
+    "mqlight"
+  ],
+  "node-red": {
+    "nodes": {
+      "tcp": "io/31-tcpin-cf.js",
+      "udp": "io/32-udp-cf.js",
+      "mqlight": "mqlight/mqlight.js",
+      "mongodb": "mongo/66-mongodb-cf.js",
+      "twilio": "twilio/56-twilio-cf.js",
+      "weather": "weather/weather_insights.js"
     }
+  }
 }
