@@ -42,7 +42,7 @@ module.exports = function(RED) {
         this.on('input', function(msg) {
             var service_username = username || this.credentials.username;
             var service_password = password || this.credentials.password;
-            var language = msg.language || config.language;
+            var language = config.language || msg.language || "en-US";
 
             if (!service_username || !service_password) {
                 var message = 'Missing Weather Insights service credentials';

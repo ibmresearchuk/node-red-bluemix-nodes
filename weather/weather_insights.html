@@ -65,8 +65,10 @@
     <p>You can retrieve weather data for an area specified by a geolocation. The data allows you to forecast, detect, and visualize disruptive weather events.</p>
     <p>The forecast service to query must be set on the editor panel to choose from forecasts (hourly and daily) or observations (current or 24 hours).</p>
     <p>The geo-location to retrieve results for can be set in the editor panel or at runtime through <code>msg.payload</code>.
-    This <code>msg.payload</code> value must be a valid comma-delimited latitude and longitude string, e.g. <code>34.53,84.50</code>.
-    The service also supports the <code>msg.location</code>> parameter with lat and lon attributes.</p>
+    This <code>msg.payload</code> value must be a valid comma-delimited latitude and longitude string, e.g. <code>34.53,84.50</code>.</p>
+    <p>The <code>msg.language</code> parameter to set the forecast text language can be set using the message parameter. If this value is set
+    in the editor configuration panel, message parameter values will be ignored. If no value is set on the message or in the editor, it defaults to "en-US".</p>
+    The service also supports the <code>msg.location</code> parameter with lat and lon attributes.</p>
     <p>The results will be returned on <code>msg.forecasts</code>, <code>msg.observation</code> or <code>msg.observations</code>
      depending on the service.</p>
     <p>For more information about Weather Insights service, read the <a href="https://www.ng.bluemix.net/docs/services/Weather/index.html" target="_new">documentation</a>.</p>
@@ -81,7 +83,7 @@
                 service: {value: "/forecast/daily/10day.json"},
                 geocode: {value: ""},
                 units: {value: "m"},
-                language: {value: "en-US"}
+                language: {value: ""}
             },
             credentials: {
                 username: {type:"text"},
