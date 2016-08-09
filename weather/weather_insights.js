@@ -42,6 +42,7 @@ module.exports = function(RED) {
         this.on('input', function(msg) {
             var service_username = username || this.credentials.username;
             var service_password = password || this.credentials.password;
+            var language = msg.language || config.language;
 
             if (!service_username || !service_password) {
                 var message = 'Missing Weather Insights service credentials';
@@ -67,7 +68,7 @@ module.exports = function(RED) {
             var request = require('request');
 
             node.status({fill:"blue", shape:"dot", text:"requesting"});
-            request({url: host + base_uri + geocode + config.service, auth: {username: service_username, password: service_password}, qs: {units: config.units, language: config.language}}, function(error, response, body) {
+            request({url: host + base_uri + geocode + config.service, auth: {username: service_username, password: service_password}, qs: {units: config.units, language: language}}, function(error, response, body) {
                 node.status({});
 
                 if (error) {
