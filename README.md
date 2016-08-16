@@ -25,7 +25,7 @@ The current release contains the following nodes:
 - Business Rules
     - Spend less time recoding and testing when the business policy changes by keeping business logic separate from application logic.
     - Simplify the integration of a Business Rules execution calls : just select one of the available Rulesets for the selected Business Rules instance.
-    - Use JSON or XML payload in input/output
+    - Use JSON or XML payload in input/output.
 
 Prior to version 1.0.1, this module also included nodes for the IBM Watson and Alchemy
 services. They have now been moved to [node-red-node-watson](http://flows.nodered.org/node/node-red-node-watson).
