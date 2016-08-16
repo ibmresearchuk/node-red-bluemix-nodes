@@ -1,0 +1,135 @@
+<!--
+  Copyright 2016 IBM Corp.
+
+  Licensed under the Apache License, Version 2.0 (the "License");
+  you may not use this file except in compliance with the License.
+  You may obtain a copy of the License at
+
+  http://www.apache.org/licenses/LICENSE-2.0
+
+  Unless required by applicable law or agreed to in writing, software
+  distributed under the License is distributed on an "AS IS" BASIS,
+  WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+  See the License for the specific language governing permissions and
+  limitations under the License.
+-->
+<script type="text/x-red" data-template-name="business-rules">
+    <div class="form-row">
+        <label for="node-input-service"><i class="fa fa-tag"></i> Service</label>
+        <select type="text" id="node-input-service" style="display: inline-block; vertical-align:middle; width: 72%;">
+        	<option value="">Select one of the Business Rules services bound to your Node-RED</option>
+        </select>
+    </div>
+    
+    <div class="form-row">
+        <label for="node-input-rulesets"><i class="fa fa-comments-o"></i> Rulesets </label>
+        <select type="text" id="node-input-rulesets" style="display: inline-block; vertical-align:middle; width: 72%;">
+        </select>
+    </div>
+
+    <div class="form-row">
+        <label for="node-input-ruleset"><i class="fa fa-comments-o"></i> Selected </label>
+        <input type="text" id="node-input-ruleset" placeholder="Ruleset Path" readonly >
+    </div>
+
+    <div class="form-tips" id="node-missing-service-warning" style="display: none"><i class="fa fa-warning"></i><b> Warning:</b> There is no Business Rules service connected
+    </div>
+
+
+</script>
+
+<script type="text/x-red" data-help-name="business-rules">
+    <p>Enables developers to spend less time recoding and testing when the business policy changes.</p>
+    <p>The Business Rules service minimizes your code changes by keeping business logic separate from application logic.</p>
+    <p><b>Node input</b></p>
+    <ul>
+    <li><code>msg.payload</code> : a string representing a valid XML or JSON payload matching the selected rulesets in the node configuration.</li>
+    </ul>
+    <p><b>Node output</b></p>
+    <ul>
+    <li><code>msg.payload</code> : the decision corresponding the input data, returned either in XML or JSON as detected in the input.</li>
+    </ul>
+
+    <p><b>Documentations</b></p>
+    <ul>
+        <li><a href="https://github.com/ylecleach/labs/tree/master/node-red/basic-labs/business-rules" target="_blank">Business Rules Node Basic Lab</a></li>
+        <li><a href="https://console.ng.bluemix.net/docs/services/rules/rules.html#rules" target="_blank">Business Rules Service documentation</a></li>
+        <li><a href="http://www.ibm.com/developerworks/topics/business%20rules%20service" target="_blank">All Business Rules service tutorials</a></li>
+        <li><a href="http://www.ibm.com/developerworks/bpm/library/techarticles/1504_reinholds-bluemix/1504_reinholds.html" target="_blank">Top 10 Bluemix tutorials for BPM</a></li>
+    </ul>
+
+</script>
+
+<script type="text/javascript">
+
+    (function() {
+
+		function updateRulesetList() {
+			var serviceSelect = $('#node-input-service');
+			var rulesetSelect = $('#node-input-rulesets');
+			
+			// clear entries
+			rulesetSelect.empty();
+			$.getJSON('business-rules/service/' + serviceSelect.val() + '/rulesets', function(rulesets) {
+				console.log(rulesets);
+				$.each(rulesets, function(index, ruleset) {
+					var option = "<option value=\"" + ruleset + "\">"+ ruleset + "</option>";
+					rulesetSelect.append(option);
+				});
+			});
+		}
+			
+        function oneditprepare() {
+            var node = this;
+            $.getJSON('business-rules/vcap/', function(services) {
+                if (services.length == 0) {
+                    $("#node-missing-service-warning").show();
+                } else {
+                    // Assume service[0]
+                    var select = $('#node-input-service');
+                    for (var i = 0; i < services.length; ++i) {
+                        var name = services[i];
+                        var option = "<option value=\"" + name + "\">"+ name + "</option>";
+                        select.append(option);
+                    }
+                    
+					// select the current service
+                    select.find("option").filter(function() {return $(this).val() === node.service;}).attr('selected', true);
+
+					// update list of ruleset for the selected service when the service changes
+					$('#node-input-service').change(function() {
+        				updateRulesetList();
+        			});
+					updateRulesetList();
+        				
+                    // update the text value when rulesets are selected
+					var rulesetSelect = $('#node-input-rulesets');
+					rulesetSelect.change(function() {
+                        console.log('debug rulesetSelect on change :' + $(this).val());
+						$("#node-input-ruleset").val($(this).val());
+					});
+                }
+            });
+        }
+
+        RED.nodes.registerType('business-rules',{
+            category: 'Smarter Process',
+            defaults: {
+                service: {value: ""},
+                ruleset: {value: ""}
+            },
+            color: "rgb(255, 255, 255)",
+            inputs: 1,
+            outputs: 1,
+            icon: "businessrules-icon25x25.png",
+            paletteLabel: "business rules",
+            label: function() {
+                return this.name || "business rules";
+            },
+            labelStyle: function() {
+                return this.name ? "node_label_italic" : "";
+            },
+            oneditprepare: oneditprepare
+        });
+    })();
+</script>

@@ -8,7 +8,9 @@
     "mqlight": ">=1.0.2014091000",
     "request": "~2.53.0",
     "twilio": "~1.6.0",
-    "when": "~3.x"
+    "when": "~3.x",
+    "lodash": "~4.13.x",
+    "xml2js": "~0.4.x"
   },
   "repository": {
     "type": "git",
@@ -23,7 +25,8 @@
     "udp",
     "mongodb",
     "twilio",
-    "mqlight"
+    "mqlight",
+    "businessrules"
   ],
   "node-red": {
     "nodes": {
@@ -32,7 +35,8 @@
       "mqlight": "mqlight/mqlight.js",
       "mongodb": "mongo/66-mongodb-cf.js",
       "twilio": "twilio/56-twilio-cf.js",
-      "weather": "weather/weather_insights.js"
+      "weather": "weather/weather_insights.js",
+      "businessrules": "businessrules/v1.js"
     }
   }
 }
