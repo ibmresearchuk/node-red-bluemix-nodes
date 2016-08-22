@@ -18,16 +18,13 @@ module.exports = function(RED) {
 
 	var _ = require('lodash'),
 		https = require('https'), 
-    	url = require('url'),
+		url = require('url'),
     	vcap = JSON.parse(process.env.VCAP_SERVICES || "{}"),
     	services = null, serviceList = null,
-    	parseXMLString = require('xml2js').parseString,
-    	isDev = false;
+    	parseXMLString = require('xml2js').parseString;
 
     services = vcap["businessrules"]||[];
     serviceList = services.map(function(s) { return s.name; });
-
-    console.log("[businessrules] Found these Business Rules services: ", serviceList);
 
 	// make these names available to the node configuration
     RED.httpAdmin.get('/business-rules/vcap', function(req, res) {
@@ -39,21 +36,19 @@ module.exports = function(RED) {
 
     	var serviceName = req.params["name"], selectedService = null;
 
-    	console.log("[businessrules] Looking for rulesets under ", serviceName);
-
-       	services.forEach(function (service) {
+		services.some(function (service) {
        		if (service.name === serviceName) {
                	selectedService = service;
+               	return true;
             }
+            return false;
         });
+
 		if (!selectedService) {
-			console.log("[businessrules] No service named " + config.service);
             res.json([]);
             return;
 		}
                         
-        console.log("[businessrules] Endpoint is ", selectedService.credentials.executionAdminRestUrl); 
-
 		var restUrl = url.parse(selectedService.credentials.executionAdminRestUrl);
 
 		// encode 'user:password' in Base64 string for basic authentication of the execution API
@@ -77,7 +72,6 @@ module.exports = function(RED) {
 			var responseString = '';
 
 			serviceResp.on('data', function(data) {
-				console.log('data :' + data);
 				responseString += data;
 			});
 
@@ -123,7 +117,6 @@ module.exports = function(RED) {
 	    try {
 	        JSON.parse(str);
 	    } catch (e) {
-	    	console.log('not JSON');
 	        return false;
 	    }
 	    return true;
@@ -133,8 +126,7 @@ module.exports = function(RED) {
 		var b = true;
         var xmlDoc = parseXMLString(xml, function (err, result) {
         	if (err) {
-        		console.log('isXMLString error:', err);
-        		b=false;
+        		b = false;
         	}
         });
         if (!xmlDoc || b===false)
@@ -156,12 +148,12 @@ module.exports = function(RED) {
 			node.error("No service selected. Please configure your Business Rules node.");
 			return false;
 		}
-		console.log("[businessrules] Selected service is ", selectedService);
-		services.forEach(function (service) {
+		services.some(function (service) {
 			if (service.name === selectedService) {
 				node.selectedService = service;
-			    console.log("[businessrules] Selected service is well defined in configuration : ", service);
+			    return true;
 			   }
+			 return false;
 		});
 		if (!node.selectedService)
 		{
@@ -174,7 +166,7 @@ module.exports = function(RED) {
 	} // function
 
 
-	function verifyPayload(node, msg) {
+	function verifyPayload(node, msg, params) {
 	    if (!msg.payload) {
 	    	node.status({fill:'red', shape:'ring', text:'missing payload'});
 	    	node.error('Missing property: msg.payload', msg);
@@ -185,37 +177,28 @@ module.exports = function(RED) {
 	    	node.error('Bad format : msg.payload must be a string', msg);
 	    	return false;
 	    }
-		node.isJsonPayload = isJSONString(msg.payload);
-	    node.isXmlPayload  = isXMLString(msg.payload);
-	    if (node.isJsonPayload==false && node.isXmlPayload==false)
+
+	    params.payloadType = isJSONString(payload) ? "application/json" : (isXMLString(payload) ? "application/xml" : null );
+	    if (params.payloadType === null)
 	    {
 	    	node.status({fill:'red', shape:'ring', text:'bad format payload'});
 	    	node.error('Bad format : msg.payload must be a string representing a valid JSON or XML payload', msg);
 	    	return false;
 	    }
-	    console.log('debug : return true');
 	    return true;
 	 } // function
 
-	function executeService(node, msg, config) {
+	function executeService(node, msg, config, params) {
 		var restUrl = null, dataString = null, encodedCredentials = null, 
 			headers = null, options = null, req = null, contentType = null;
 
 		restUrl = url.parse(node.selectedService.credentials.executionRestUrl);
 		dataString = msg.payload;
-		// encode 'user:password' in Base64 string for basic authentication of the execution API
 		encodedCredentials = new Buffer(node.selectedService.credentials.user + ':' + 
 			node.selectedService.credentials.password).toString('base64');
 
-		console.log("[businessrules] Submitting payload: ", dataString);
-
-		if (node.isJsonPayload==true)
-			contentType = 'application/json';
-		else
-			contentType = 'application/xml';
-
 		headers = {
-			'Content-Type' : contentType,
+			'Content-Type' : params.payloadType,
 			'Content-Length' : dataString.length,
 			'Authorization' : 'Basic ' + encodedCredentials
 		};
@@ -227,17 +210,12 @@ module.exports = function(RED) {
 			headers : headers
 		};
 
-		if (isDev===true)
-			console.log('options : ', options);
-
 		req = https.request(options, function(resp) {
 			var responseString = '';
 
 			resp.setEncoding('utf-8');
 			resp.on('data', function(data) {
 				responseString += data;
-				if (isDev===true)
-					console.log("receiving data : " + data);
 			});
 
 			resp.on('end', function() {
@@ -270,21 +248,14 @@ module.exports = function(RED) {
 		RED.nodes.createNode(this, config);
 
 		node.on('input', function (msg) {    
-	  		//var params = {};
+	  		var params = {};
 	  		node.status({});
-		    b = verifyServiceCredentials(node, msg);
-		    if (!b) {
-		    	return;
-		    }
-		    b = checkSelectedServiceExists(node, msg, config.service);
-		    if (!b) {
-		    	return;
-		    }
-		    b = verifyPayload(node, msg);
-		    if (!b) {
-		    	return;
-		    }
-		    executeService(node,msg,config);
+	  		if (verifyServiceCredentials(node, msg) && 
+	  			checkSelectedServiceExists(node, msg, config.service) &&
+	  			verifyPayload(node, msg, params)) {
+
+	  			executeService(node,msg,config, params);
+	  		}
 		});
 	}
 	RED.nodes.registerType("business-rules",BusinessRulesNode);
