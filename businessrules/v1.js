@@ -177,8 +177,7 @@ module.exports = function(RED) {
 	    	node.error('Bad format : msg.payload must be a string', msg);
 	    	return false;
 	    }
-
-	    params.payloadType = isJSONString(payload) ? "application/json" : (isXMLString(payload) ? "application/xml" : null );
+	    params.payloadType = isJSONString(msg.payload) ? "application/json" : (isXMLString(msg.payload) ? "application/xml" : null );
 	    if (params.payloadType === null)
 	    {
 	    	node.status({fill:'red', shape:'ring', text:'bad format payload'});
@@ -243,7 +242,7 @@ module.exports = function(RED) {
 	// the actual implementation of the call to the selected decision service in the selected Business Rules service
 	function BusinessRulesNode(config) {
 
-		var node = this, b = false;
+		var node = this;
 
 		RED.nodes.createNode(this, config);
 
