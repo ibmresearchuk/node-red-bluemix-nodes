@@ -30,7 +30,33 @@ module.exports = function(RED) {
     RED.httpAdmin.get('/business-rules/vcap', function(req, res) {
         res.json(serviceList);
     });
-    
+
+	// used to get payload sample data (see UI)
+    RED.httpAdmin.get('/business-rules/get-htds-test-uri/:serviceSelectedVal/:rulesetSelectedVal', function(req, res) {
+    	var restUrl = null, rulesetSelectedVal = null, serviceSelectedVal = null;
+
+    	rulesetSelectedVal = decodeURIComponent(req.params["rulesetSelectedVal"]);
+    	serviceSelectedVal = decodeURIComponent(req.params["serviceSelectedVal"]);
+		services.some(function (service) {
+       		if (service.name === serviceSelectedVal) {
+               	selectedService = service;
+               	return true;
+            }
+            return false;
+        });
+		if (!selectedService) {
+            res.json([]);
+            return;
+		}
+		restUrl = url.parse(selectedService.credentials.executionRestUrl);
+		var data = {};
+		data.url = restUrl;
+		data.username = selectedService.credentials.user;
+		data.password = selectedService.credentials.password;
+		res.json(data);
+	});
+
+
     // return the rulesets deployed in a given service
     RED.httpAdmin.get('/business-rules/service/:name/rulesets', function(req, res) {
 
@@ -92,7 +118,7 @@ module.exports = function(RED) {
 					latestVersions.sort();
 					latestVersions = _.uniq(latestVersions);					
 					// a separator
-					latestVersions.push("");
+					latestVersions.push("Previous versions :");
 					// and all the full version rulesets
 					rulesets.sort();
 					res.json(latestVersions.concat(rulesets));
