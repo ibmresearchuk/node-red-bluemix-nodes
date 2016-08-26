@@ -26,7 +26,6 @@
     <div class="form-row">
         <label for="node-input-rulesets"><i class="fa fa-hand-o-right"></i> Rulesets </label>
         <select type="text" id="node-input-rulesets" style="display: inline-block; vertical-align:middle; width: 72%;">
-            <option value="">Select one of the Rulesets (first are latest versions)</option>
         </select>
     </div>
 
@@ -36,13 +35,13 @@
     </div>
 
     <div class="form-row">
-        <label for="node-input-htds-test-label1"><i class="fa fa-cog"></i> Test tool </label>
-        <a id="node-input-htds-test-link1" href="" onclick="javascript:CallHTDSTest(false);return false;" target="_blank">Decision Service with Trace Disabled</a>
-    </div>
-
-    <div class="form-row">
-        <label for="node-input-htds-test-label2"><i class="fa fa-bug"></i> Debug tool </label>
-        <a id="node-input-htds-test-link2" http="" onclick="javascript:CallHTDSTest(true);return false;" target="_blank">Decision Service with Trace Enabled</a>
+        <label for="node-input-test-test-mode"><i class="fa fa-cog"></i> Test </label>
+        <select type="text" id="node-input-test-mode" style="display: inline-block; vertical-align:middle; width: 59%;">
+            <option value="false">Current Decision Service with trace disabled</option>
+            <option value="true">Current Decision Service with trace enabled</option>
+        </select>
+        <a id="node-input-htds-test-btn" class="btn" href="#" onclick="javascript:TestDecisionService();return false;">
+            <i class="fa fa-external-link"></i> Run</a>
     </div>
 
     <div class="form-tips" id="node-missing-service-warning" style="display: none"><i class="fa fa-warning"></i><b> Warning:</b> There is no Business Rules service connected
@@ -78,47 +77,51 @@
 
 <script type="text/javascript">
 
- function CallHTDSTest (traceMode) {
-            var mode = null, serviceSelect = null, rulesetSelect = null, serviceSelectedVal = null, rulesetSelectedVal = null
+ function TestDecisionService () {
+            var traceMode = null, serviceSelect = null, rulesetSelect = null, serviceSelectedVal = null, rulesetSelectedVal = null
                 req_string = null, fullURL = null;
             
+            traceMode = $('#node-input-test-mode').val();
             serviceSelect = $('#node-input-service');
             rulesetSelect = $('#node-input-ruleset');
             serviceSelectedVal = serviceSelect.val();
             rulesetSelectedVal = rulesetSelect.val();
             req_string = 'business-rules/get-htds-test-uri/' + encodeURIComponent(serviceSelectedVal)+ '/'+ encodeURIComponent(rulesetSelectedVal) ;
             $.getJSON(req_string, function(data) {
-                fullURL = 'https://' + data.username + ':' + data.password + '@' + data.url.host + '/DecisionService/run.jsp?path=' +rulesetSelectedVal+'&trace='+traceMode;
+                fullURL = 'https://' + data.username + ':' + data.password + '@' + data.url.host + '/DecisionService/run.jsp?path=' +rulesetSelectedVal+'&trace='+(traceMode === "true" ? true : false);
                 window.open(fullURL);
             });
 }
 
     (function() {
 
-		function updateRulesetList() {
-            var node = this;
-
+		function updateRulesetList(node) {
+            
 			var serviceSelect = $('#node-input-service');
-			var rulesetSelect = $('#node-input-rulesets');
+			var rulesetsSelect = $('#node-input-rulesets');
 			
+            rulesetsSelect.empty();
 			$.getJSON('business-rules/service/' + serviceSelect.val() + '/rulesets', function(rulesets) {
 				$.each(rulesets, function(index, ruleset) {
 					var option = "<option value=\"" + ruleset + "\">"+ ruleset + "</option>";
-					rulesetSelect.append(option);
+					rulesetsSelect.append(option);
 				});
+                rulesetsSelect.find("option").filter(function() {return $(this).val() === node.rulesets;}).attr('selected', true);
 			});
             
 		}
 			
         function oneditprepare() {
+
             var node = this;
+
             $.getJSON('business-rules/vcap/', function(services) {
                 if (services.length == 0) {
                     $("#node-missing-service-warning").show();
                 } else {
                     // Assume service[0]
                     var select = $('#node-input-service');
-                    var rulesetSelect = $('#node-input-rulesets');
+                    var rulesetsSelect = $('#node-input-rulesets');
 
                     for (var i = 0; i < services.length; ++i) {
                         var name = services[i];
@@ -130,12 +133,12 @@
 
 					// update list of ruleset for the selected service when the service changes
 					$('#node-input-service').change(function() {
-        				updateRulesetList();
+        				updateRulesetList(node);
         			});
-					updateRulesetList();
+					updateRulesetList(node);
         			
                     // update the text value when rulesets are selected
-					rulesetSelect.change(function() {
+					rulesetsSelect.change(function() {
 						$("#node-input-ruleset").val($(this).val());
 					});
                 }
@@ -146,6 +149,7 @@
             category: 'Smarter Process',
             defaults: {
                 service: {value: ""},
+                rulesets: {value: ""},
                 ruleset: {value: ""}
             },
             color: "rgb(255, 255, 255)",

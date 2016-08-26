@@ -21,7 +21,18 @@ module.exports = function(RED) {
 		url = require('url'),
     	vcap = JSON.parse(process.env.VCAP_SERVICES || "{}"),
     	services = null, serviceList = null,
-    	parseXMLString = require('xml2js').parseString;
+    	//parseXMLString = require('xml2js').parseString,
+
+///
+	parseXMLString = require('xml2js').parseString, isDev = true;
+
+    if (isDev==true) {
+    	console.log('Development Mode');
+    	vcap = {"businessrules":[ {"credentials":{"executionAdminRestUrl":"https://brsv2-78b76b87.ng.bluemix.net/res/apiauth","executionAdminUrl":"https://brsv2-78b76b87.ng.bluemix.net/res","executionRestUrl":"https://brsv2-78b76b87.ng.bluemix.net/DecisionService/rest","executionSoapUrl":"https://brsv2-78b76b87.ng.bluemix.net/DecisionService/ws","password":"1h82jpoybyr7c","user":"resAdmin"},"label":"businessrules","name":"Business-Rules-4-Node-RED","plan":"standard","tags":["web_and_app","ibm_created","ibm_dedicated_public"]}, 
+    		                      {"credentials":{"executionAdminRestUrl":"https://brsv2-78b76b87.ng.bluemix.net/res/apiauth","executionAdminUrl":"https://brsv2-78b76b87.ng.bluemix.net/res","executionRestUrl":"https://brsv2-78b76b87.ng.bluemix.net/DecisionService/rest","executionSoapUrl":"https://brsv2-78b76b87.ng.bluemix.net/DecisionService/ws","password":"1h82jpoybyr7c","user":"resAdmin"},"label":"businessrules","name":"Business-Rules-4-Node-RED-BIS","plan":"standard","tags":["web_and_app","ibm_created","ibm_dedicated_public"]}]};
+    	console.log('vcap',vcap);
+    }
+///
 
     services = vcap["businessrules"]||[];
     serviceList = services.map(function(s) { return s.name; });
