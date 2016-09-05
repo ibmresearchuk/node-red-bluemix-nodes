@@ -1,0 +1,125 @@
+<!DOCTYPE HTML>
+<!--
+  Copyright 2016 IBM Corp.
+
+  Licensed under the Apache License, Version 2.0 (the "License");
+  you may not use this file except in compliance with the License.
+  You may obtain a copy of the License at
+
+  http://www.apache.org/licenses/LICENSE-2.0
+
+  Unless required by applicable law or agreed to in writing, software
+  distributed under the License is distributed on an "AS IS" BASIS,
+  WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+  See the License for the specific language governing permissions and
+  limitations under the License.
+-->
+
+<script type="text/x-red" data-template-name="predictive_analytics">
+    <div id="credentials-check" class="form-row">
+        <div class="form-tips">
+            <i class="fa fa-question-circle"></i><b> Please wait: </b> Checking for bound service credentials...
+        </div>
+    </div>
+    <div class="form-row credentials" style="display: none;">
+        <label for="node-input-key"><i class="fa fa-key"></i> API Key</label>
+        <input type="password" id="node-input-key" placeholder="API key">
+    </div>
+    <div class="form-row">
+        <label for="node-input-cid"><i class="fa fa-question"></i> Context ID</label>
+        <input type="text" id="node-input-cid" placeholder="Please hit search" style="width:61%">
+        <a id="node-lookup-key" class="btn"><i class="fa fa-search"></i></a>
+    </div>
+    <div class="form-row">
+        <label for="node-input-name"><i class="fa fa-tag"></i> Name</label>
+        <input type="text" id="node-input-name" placeholder="Name">
+    </div>
+</script>
+
+<script type="text/x-red" data-help-name="predictive_analytics">
+    <p>The Predictive Analytics node allows you score an input set of parameters using an SPSS model running
+    on a <a href="http://bluemix.net" target="_new">Bluemix</a> Predictive Analytics Service.</p>
+    <p>You must pass in a <code>msg.payload</code> object <i>as required</i> by the model... so you must
+    know what the model looks like. Typically it would be an object similar to :</p>
+    <pre>{
+    "tablename":"scoring",
+    "header":["X","Y","Z"],
+    "data":[[4,2,1]]
+}</pre>
+    <p>The <code>data</code> may be an array of multiple input arrays, and each element will be scored.</p>
+    <p>The results will be returned as a <code>msg.payload</code> object formatted as defined by the model.</p>
+    <p>For more information about the Predictive Analytics service, read the
+    <a href="https://www.ng.bluemix.net/docs/services/PredictiveModeling/index.html" target="_new">documentation</a>.</p>
+</script>
+
+<script type="text/javascript">
+    (function() {
+        RED.nodes.registerType('predictive_analytics', {
+            category: 'analysis',
+            defaults: {
+                name: {value:""},
+                cid: {value:"", required:true}
+            },
+            credentials: {
+                key: {type:"password"}
+            },
+            color: "rgb(192, 222, 237)",
+            inputs: 1,
+            outputs: 1,
+            icon: "spss.png",
+            paletteLabel: "predictive analytics",
+            label: function() {
+                return this.name || "predictive analytics";
+            },
+            labelStyle: function() {
+                return this.name ? "node_label_italic" : "";
+            },
+            oneditprepare: function() {
+                var bm = false;
+                var myId = this.id;
+
+                $.getJSON('predictive_analytics/vcap/')
+                    .done(function (service) {
+                        if (service) { bm = true; }
+                        $('.credentials').toggle(!service);
+                    })
+                    .fail(function () {
+                        $('.credentials').show();
+                        if ($("#node-input-key").val().length === 0) {
+                            $("#node-input-cid").val("Please enter API key then hit search");
+                        }
+                    }).always(function () {
+                        $('#credentials-check').hide();
+                    });
+
+                try {
+                    $("#node-input-cid").autocomplete( "destroy" );
+                } catch(err) {
+                }
+                $("#node-lookup-key").click(function() {
+                    var lkey = $("#node-input-key").val();
+                    if (bm || lkey.length !== 0) {
+                        var u = 'predictive_analytics/models/';
+                        if (!bm) {
+                            if (lkey !== "__PWRD__") { u += "?k="+lkey; }
+                            else { u += "?id="+myId; }
+                        }
+                        $.getJSON(u)
+                            .done(function (list) {
+                                $("#node-input-cid").autocomplete({
+                                    source:list,
+                                    minLength:0,
+                                    close: function( event, ui ) {
+                                        $("#node-input-cid").autocomplete( "destroy" );
+                                    }
+                                }).autocomplete("search","");
+                            })
+                            .fail(function (err) {
+                                $("#node-input-cid").val("fetch failed - enter manually");
+                            });
+                    }
+                });
+            }
+        });
+    })();
+</script>
