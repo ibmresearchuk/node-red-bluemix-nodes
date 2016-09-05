@@ -1,6 +1,6 @@
 {
   "name": "node-red-bluemix-nodes",
-  "version": "1.1.7",
+  "version": "1.1.8",
   "description": "A collection of extra Node-RED nodes for IBM Bluemix.",
   "dependencies": {
     "cfenv": "^1.0.0",
@@ -9,7 +9,7 @@
     "request": "^2.74.0",
     "twilio": "^1.6.0",
     "when": "^3.x",
-    "lodash": "^4.15..x",
+    "lodash": "^4.15.x",
     "xml2js": "^0.4.x"
   },
   "repository": {
