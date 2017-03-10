@@ -17,7 +17,7 @@
 module.exports = function(RED) {
     var cfenv = require('cfenv');
     var services = cfenv.getAppEnv().services;
-    var username, password, host = 'https://twcservice.mybluemix.net', base_uri = '/api/weather/v1/geocode/';
+    var username, password, host, base_uri = '/api/weather/v1/geocode/';
     var service;
     for (var i in services) {
         if (i.match(/^(weatherinsights)/i)) {
@@ -28,7 +28,7 @@ module.exports = function(RED) {
     if (service) {
         username = service.credentials.username;
         password = service.credentials.password;
-        host = 'https://' + service.credentials.host;
+        host = service.credentials.host;
     }
 
     RED.httpAdmin.get('/weather_insights/vcap', function(req, res) {
@@ -42,9 +42,10 @@ module.exports = function(RED) {
         this.on('input', function(msg) {
             var service_username = username || this.credentials.username;
             var service_password = password || this.credentials.password;
+            var service_host = host || config.host;
             var language = config.language || msg.language || "en-US";
 
-            if (!service_username || !service_password) {
+            if (!service_username || !service_password || !service_host) {
                 var message = 'Missing Weather Insights service credentials';
                 node.error(message, msg);
                 return;
@@ -68,7 +69,7 @@ module.exports = function(RED) {
             var request = require('request');
 
             node.status({fill:"blue", shape:"dot", text:"requesting"});
-            request({url: host + base_uri + geocode + config.service, auth: {username: service_username, password: service_password}, qs: {units: config.units, language: language}}, function(error, response, body) {
+            request({url: 'https://' + service_host + base_uri + geocode + config.service, auth: {username: service_username, password: service_password}, qs: {units: config.units, language: language}}, function(error, response, body) {
                 node.status({});
 
                 if (error) {
