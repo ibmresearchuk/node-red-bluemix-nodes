@@ -1,6 +1,6 @@
 {
   "name": "node-red-bluemix-nodes",
-  "version": "1.1.9",
+  "version": "1.1.10",
   "description": "A collection of extra Node-RED nodes for IBM Bluemix.",
   "dependencies": {
     "cfenv": "^1.0.0",
@@ -26,7 +26,9 @@
     "mongodb",
     "twilio",
     "mqlight",
-    "businessrules"
+    "businessrules",
+    "spss",
+    "predictive"
   ],
   "node-red": {
     "nodes": {
@@ -36,7 +38,8 @@
       "mongodb": "mongo/66-mongodb-cf.js",
       "twilio": "twilio/56-twilio-cf.js",
       "weather": "weather/weather_insights.js",
-      "businessrules": "businessrules/v1.js"
+      "businessrules": "businessrules/v1.js",
+      "spssscoring": "spss/spssscoring.js"
     }
   }
 }
