@@ -60,6 +60,58 @@ module.exports = function(RED) {
                 geocode = [msg.location.lat, msg.location.lon].join('/');
             } else if (config.geocode.match(lat_long_regex)) {
                 geocode = config.geocode.replace(',', '/');
+            } else if (typeof msg.payload === 'string' && msg.payload.trim() != "") {
+
+                var request = require('request');                
+                var base_uri_v3 = '/api/weather/v3/location/';
+                node.status({fill:"blue", shape:"dot", text:"getting location"});
+                request({url: 'https://' + service_host + base_uri_v3 + "search", auth: {username: service_username, password: service_password}, qs: {query: msg.payload, language: language}}, function(error, response, body) {    
+                    node.status({});
+
+                    if (error) {
+                      node.error('Weather Insights service call failed with error HTTP response.', msg);
+                    } else if (response.statusCode === 401) {
+                      node.error('Weather Insights service call failure due to authentication failure.', msg);
+                    } else if (response.statusCode === 404) {
+                      node.error('Weather Insights service call failed due to HTTP 404 response to API call.', msg);
+                    } else if (response.statusCode !== 200) {
+                      node.error('Weather Insights service call failed due to non-200 HTTP response to API call.', msg);
+                    } else {
+                        var results = JSON.parse(body);
+                        
+                        if (results && results.location 
+                            && results.location.latitude && results.location.latitude.length > 0
+                            && results.location.longitude && results.location.longitude.length > 0) {
+                            
+                            geocode = results.location.latitude[0] + "/" + results.location.longitude[0];
+                            
+                            node.status({fill:"blue", shape:"dot", text:"requesting"});
+                            request({url: 'https://' + service_host + base_uri + geocode + config.service, auth: {username: service_username, password: service_password}, qs: {units: config.units, language: language}}, function(error, response, body) {
+                                node.status({});
+
+                                if (error) {
+                                  node.error('Weather Insights service call failed with error HTTP response.', msg);
+                                } else if (response.statusCode === 401) {
+                                  node.error('Weather Insights service call failure due to authentication failure.', msg);
+                                } else if (response.statusCode === 404) {
+                                  node.error('Weather Insights service call failed due to HTTP 404 response to API call.', msg);
+                                } else if (response.statusCode !== 200) {
+                                  node.error('Weather Insights service call failed due to non-200 HTTP response to API call.', msg);
+                                } else {
+                                    var results = JSON.parse(body);
+                                    msg.forecasts = results.forecasts;
+                                    msg.observation = results.observation;
+                                    msg.observations = results.observations;
+                                    node.send(msg);
+                                }
+                            });
+                            return;                            
+                        } else {
+                            node.error('Weather Insights service could not find the location.', msg);
+                        }
+                    }
+                    
+                });                
             } else {
                 var message2 = 'Missing valid latlong parameters on either msg.payload, msg.location or node config.';
                 node.error(message2, msg);
