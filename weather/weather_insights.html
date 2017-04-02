@@ -48,7 +48,7 @@
     </div>
     <div class="form-row">
         <label for="node-input-geocode"><i class="fa fa-tag"></i> Location</label>
-        <input type="text" id="node-input-geocode" placeholder="latitude,longitude">
+        <input type="text" id="node-input-geocode" placeholder="latitude,longitude or city">
     </div>
     <div class="form-row">
         <label for="node-input-units"><i class="fa fa-question"></i> Units</label>
@@ -66,10 +66,10 @@
 
 <script type="text/x-red" data-help-name="weather_insights">
     <p>The Weather Insights service allows you access historical and real-time weather data from The Weather Company.</p>
-    <p>You can retrieve weather data for an area specified by a geolocation. The data allows you to forecast, detect, and visualize disruptive weather events.</p>
+    <p>You can retrieve weather data for an area specified by a geolocation or a city name. The data allows you to forecast, detect, and visualize disruptive weather events.</p>
     <p>The forecast service to query must be set on the editor panel to choose from forecasts (hourly and daily) or observations (current or 24 hours).</p>
-    <p>The geo-location to retrieve results for can be set in the editor panel or at runtime through <code>msg.payload</code>.
-    This <code>msg.payload</code> value must be a valid comma-delimited latitude and longitude string, e.g. <code>34.53,84.50</code>.</p>
+    <p>The geo-location or city to retrieve results for can be set in the editor panel or at runtime through <code>msg.payload</code>.
+    This <code>msg.payload</code> value for geo-location must be a valid comma-delimited latitude and longitude string, e.g. <code>34.53,84.50</code> or a city name, e.g. <code>Los Angeles</code>.</p>
     <p>The <code>msg.language</code> parameter to set the forecast text language can be set using the message parameter. If this value is set
     in the editor configuration panel, message parameter values will be ignored. If no value is set on the message or in the editor, it defaults to "en-US".</p>
     The service also supports the <code>msg.location</code> parameter with lat and lon attributes.</p>
