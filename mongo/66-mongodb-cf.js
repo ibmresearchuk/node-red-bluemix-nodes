@@ -304,11 +304,11 @@ module.exports = function(RED) {
                         msg.projection = msg.projection || {};
                         var selector = ensureValidSelectorObject(msg.payload);
                         var skip = msg.skip;
-                            if (typeof skip === "string" && !isNaN(skip)) {
-                                skip = Number(skip);
-                            } else if (typeof skip === "undefined") {
-                                skip = 0;
-                            }
+                        if (typeof skip === "string" && !isNaN(skip)) {
+                            skip = Number(skip);
+                        } else if (typeof skip === "undefined") {
+                            skip = 0;
+                        }
 
                         coll.find(selector, msg.projection).sort(msg.sort).limit(msg.limit).skip(skip)toArray(function(err, items) {
                             if (err) {
