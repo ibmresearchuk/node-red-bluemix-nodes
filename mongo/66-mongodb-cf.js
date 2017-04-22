@@ -303,7 +303,14 @@ module.exports = function(RED) {
                     if (node.operation === "find") {
                         msg.projection = msg.projection || {};
                         var selector = ensureValidSelectorObject(msg.payload);
-                        coll.find(selector, msg.projection).sort(msg.sort).limit(msg.limit).toArray(function(err, items) {
+                        var skip = msg.skip;
+                        if (typeof skip === "string" && !isNaN(skip)) {
+                            skip = Number(skip);
+                        } else if (typeof skip === "undefined") {
+                            skip = 0;
+                        }
+
+                        coll.find(selector, msg.projection).sort(msg.sort).limit(msg.limit).skip(skip)toArray(function(err, items) {
                             if (err) {
                                 node.error(err);
                             } else {
@@ -311,6 +318,7 @@ module.exports = function(RED) {
                                 delete msg.projection;
                                 delete msg.sort;
                                 delete msg.limit;
+                                delete msg.skip;
                                 node.send(msg);
                             }
                         });
